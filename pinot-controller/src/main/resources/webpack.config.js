@@ -16,7 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+const path = require("path");
 const HtmlWebPackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = (env, argv) => {
   const devMode = argv.mode === 'development';
@@ -32,6 +34,10 @@ module.exports = (env, argv) => {
       modules: ['./app', 'node_modules'],
     },
     entry: './app/App.tsx',
+    output: {
+      path: path.resolve(__dirname, 'dist/webapp'),
+      filename: './js_new/main.js'
+    },
     devServer: {
       compress: true,
       hot: true,
@@ -92,6 +98,7 @@ module.exports = (env, argv) => {
       ],
     },
     plugins: [
+      new CleanWebpackPlugin(),
       new HtmlWebPackPlugin({
         template: './app/index.html',
         meta: {

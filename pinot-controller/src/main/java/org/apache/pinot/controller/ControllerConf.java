@@ -196,13 +196,6 @@ public class ControllerConf extends PropertiesConfiguration {
     setProperty(CONSOLE_WEBAPP_ROOT_PATH, path);
   }
 
-  public String getQueryConsoleWebappPath() {
-    if (containsKey(CONSOLE_WEBAPP_ROOT_PATH)) {
-      return (String) getProperty(CONSOLE_WEBAPP_ROOT_PATH);
-    }
-    return ControllerConf.class.getClassLoader().getResource("webapp").toExternalForm();
-  }
-
   public void setQueryConsoleUseHttps(boolean useHttps) {
     setProperty(CONSOLE_WEBAPP_USE_HTTPS, useHttps);
   }

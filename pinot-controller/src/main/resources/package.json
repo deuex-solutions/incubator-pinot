@@ -10,8 +10,6 @@
     "lint": "eslint 'app/**/*.{js,ts,tsx,jsx}' --quiet --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Deuex Solutions <sanket@deuexsolutions.com> (https://deuexsolutions.com/)",
-  "license": "ISC",
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -27,6 +25,7 @@
     "@types/react-dom": "16.9.6",
     "@typescript-eslint/eslint-plugin": "2.30.0",
     "@typescript-eslint/parser": "2.30.0",
+    "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^3.5.3",
     "eslint": "6.8.0",
     "eslint-config-airbnb": "18.1.0",
