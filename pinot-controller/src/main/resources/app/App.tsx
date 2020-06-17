@@ -1,10 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Typography } from '@material-ui/core';
-
+import { MuiThemeProvider } from '@material-ui/core';
+import HomePage from './pages/HomePage';
+import theme from './theme';
+ 
 const App = () => {
   return (
-    <Typography variant="h1">Hello World</Typography>
+    <MuiThemeProvider theme={theme}>
+      <HomePage />
+    </MuiThemeProvider>
   );
 };
 

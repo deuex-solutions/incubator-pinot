@@ -49,6 +49,10 @@
         "allowForLoopAfterthoughts": true
       }
     ],
+    // TODO: Remove this when got actual data
+    "react/no-array-index-key": [
+      "warn"
+    ],
     "react/jsx-key": "error",
     "import/no-extraneous-dependencies": [
       "error",
