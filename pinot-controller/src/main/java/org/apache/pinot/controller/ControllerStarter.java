@@ -156,7 +156,7 @@ public class ControllerStarter implements ServiceStartable {
       // queries)
       FunctionRegistry.init();
       _adminApp =
-          new ControllerAdminApiApplication(_config.getQueryConsoleWebappPath(), _config.getQueryConsoleUseHttps());
+          new ControllerAdminApiApplication(_config.getQueryConsoleUseHttps());
       // Do not use this before the invocation of {@link PinotHelixResourceManager::start()}, which happens in {@link ControllerStarter::start()}
       _helixResourceManager = new PinotHelixResourceManager(_config);
       _executorService =

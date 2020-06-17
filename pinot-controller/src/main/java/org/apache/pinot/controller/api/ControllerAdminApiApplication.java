@@ -45,16 +45,11 @@ public class ControllerAdminApiApplication extends ResourceConfig {
   private URI baseUri;
   private boolean started = false;
   private static final String RESOURCE_PACKAGE = "org.apache.pinot.controller.api.resources";
-  private static String CONSOLE_WEB_PATH;
   private final boolean _useHttps;
 
-  public ControllerAdminApiApplication(String consoleWebPath, boolean useHttps) {
+  public ControllerAdminApiApplication(boolean useHttps) {
     super();
-    CONSOLE_WEB_PATH = consoleWebPath;
     _useHttps = useHttps;
-    if (!CONSOLE_WEB_PATH.endsWith("/")) {
-      CONSOLE_WEB_PATH += "/";
-    }
     packages(RESOURCE_PACKAGE);
     // TODO See ControllerResponseFilter
 //    register(new LoggingFeature());
@@ -99,7 +94,9 @@ public class ControllerAdminApiApplication extends ResourceConfig {
     httpServer.getServerConfiguration().addHttpHandler(new CLStaticHttpHandler(classLoader, "/static/css/"), "/css/");
     httpServer.getServerConfiguration().addHttpHandler(new CLStaticHttpHandler(classLoader, "/static/js/"), "/js/");
     // without this explicit request to /index.html will not work
-    httpServer.getServerConfiguration().addHttpHandler(new CLStaticHttpHandler(classLoader, "/static/"), "/index.html");
+    httpServer.getServerConfiguration().addHttpHandler(new CLStaticHttpHandler(classLoader, "/webapp/"), "/index.html");
+    httpServer.getServerConfiguration().addHttpHandler(new CLStaticHttpHandler(classLoader, "/webapp/css/"), "/css_new/");
+    httpServer.getServerConfiguration().addHttpHandler(new CLStaticHttpHandler(classLoader, "/webapp/js_new/"), "/js_new/");
 
     started = true;
     LOGGER.info("Start jersey admin API on port: {}", httpPort);

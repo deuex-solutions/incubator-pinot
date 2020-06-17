@@ -228,47 +228,72 @@
 
         <!-- optional -->
         <configuration>
-            <workingDirectory>src/main/resources/</workingDirectory>
-            <installDirectory>target</installDirectory>
+          <workingDirectory>src/main/resources/</workingDirectory>
+          <installDirectory>target</installDirectory>
         </configuration>
 
-            <executions>
-                <execution>
-                    <id>install node and npm</id>
-                    <goals>
-                        <goal>install-node-and-npm</goal>
-                    </goals>
-                    <configuration>
-                        <nodeVersion>v10.16.1</nodeVersion>
-                        <npmVersion>6.10.0</npmVersion>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>npm install</id>
-                    <goals>
-                        <goal>npm</goal>
-                    </goals>
-                    <phase>generate-resources</phase>
-                    <configuration>
-                        <arguments>install</arguments>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>npm run-script build</id>
-                    <goals>
-                        <goal>npm</goal>
-                    </goals>
-                    <!-- optional: the default phase is "generate-resources" -->
-                    <phase>generate-resources</phase>
-                    <configuration>
-                        <!-- optional: if not specified, it will run gulp's default task
-                            (and you can remove this whole <configuration> section.) -->
-                        <arguments>run-script build</arguments>
-                        <!--arguments>build</arguments-->
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
+        <executions>
+          <execution>
+            <id>install node and npm</id>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+            <configuration>
+              <nodeVersion>v10.16.1</nodeVersion>
+              <npmVersion>6.10.0</npmVersion>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm install</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>install</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm run-script build</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <!-- optional: the default phase is "generate-resources" -->
+            <phase>generate-resources</phase>
+            <configuration>
+              <!-- optional: if not specified, it will run gulp's default task
+                  (and you can remove this whole <configuration> section.) -->
+              <arguments>run-script build</arguments>
+              <!--arguments>build</arguments-->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <!-- this is important -->
+              <overwrite>true</overwrite>
+              <!-- target -->
+              <outputDirectory>${basedir}/target/classes/static</outputDirectory>
+              <resources>
+                <resource>
+                  <!-- source -->
+                  <directory>src/main/resources/static</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
