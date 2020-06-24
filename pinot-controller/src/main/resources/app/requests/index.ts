@@ -17,22 +17,21 @@
  * under the License.
  */
 
-import React from 'react';
-import { AppBar, Box } from '@material-ui/core';
-import Logo from '../utils/SvgIcons';
-import BreadcrumbsComponent from './Breadcrumbs';
+import { AxiosResponse } from 'axios';
+import { TableData, Instances, Instance, Tenants, ClusterConfig } from 'Models';
+import { baseApi } from '../utils/axios-config';
 
-const Header = () => (
-  <AppBar position="static">
-    <Box display="flex">
-      <Box textAlign="center" marginY="12.5px" width={250} borderRight="1px solid rgba(255,255,255,0.5)">
-        <Logo />
-      </Box>
-      <Box display="flex" alignItems="center">
-        <BreadcrumbsComponent />
-      </Box>
-    </Box>
-  </AppBar>
-);
+export const getTenants = (): Promise<AxiosResponse<Tenants>> =>
+  baseApi.get('/tenants');
 
-export default Header;
+export const getTenant = (name: string): Promise<AxiosResponse<TableData>> => 
+  baseApi.get(`/tenants/${name}`);
+
+export const getInstances = (): Promise<AxiosResponse<Instances>> =>
+  baseApi.get('/instances');
+
+export const getInstance = (name: string): Promise<AxiosResponse<Instance>> =>
+  baseApi.get(`/instances/${name}`);
+
+export const getClusterConfig = (): Promise<AxiosResponse<ClusterConfig>> => 
+  baseApi.get('/cluster/configs');

@@ -53,13 +53,18 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.9.11",
+    "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.51",
+    "@types/react-router-dom": "^5.1.5",
+    "axios": "^0.19.2",
+    "axios-mock-adapter": "^1.18.1",
     "cross-fetch": "^3.0.4",
     "file-loader": "^6.0.0",
     "html-loader": "0.5.5",
     "html-webpack-plugin": "^4.2.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "react-router-dom": "^5.2.0",
     "url-loader": "^4.1.0",
     "webpack-dev-server": "3.2.1"
   }

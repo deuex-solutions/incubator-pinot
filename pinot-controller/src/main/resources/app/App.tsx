@@ -20,15 +20,30 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { MuiThemeProvider } from '@material-ui/core';
+import {
+  Switch,
+  Route,
+  BrowserRouter as Router,
+} from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import theme from './theme';
- 
-const App = () => {
-  return (
-    <MuiThemeProvider theme={theme}>
-      <HomePage />
-    </MuiThemeProvider>
-  );
-}
 
-ReactDOM.render(<App />, document.getElementById('app'))
+import Layout from './components/Layout';
+import TenantsPage from './pages/Tenants';
+ 
+const App = () => (
+  <MuiThemeProvider theme={theme}>
+    <Router>
+      <Layout>
+        <Switch>
+          <Route exact path="/">
+            <HomePage />
+          </Route>
+          <Route exact path="/tenants/:name" component={TenantsPage} />
+        </Switch>
+      </Layout>
+    </Router>
+  </MuiThemeProvider>
+);
+
+ReactDOM.render(<App />, document.getElementById('app'));

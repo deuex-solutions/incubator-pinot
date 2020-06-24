@@ -18,19 +18,18 @@
  */
 
 import * as React from 'react';
-import Layout from '../components/Layout';
-import CustomizedTables from '../components/Table';
+import TenantsTable from '../components/Homepage/TenantsTable';
+import Instances from '../components/Homepage/InstancesTables';
+import ClusterConfig from '../components/Homepage/ClusterConfig';
 
-const data = [
-  ['Default', 1, 1, 1],
-  ['Finance', 2, 2, 2],
-  ['BizOps', 3, 3, 3]
-];
-
-const HomePage = () => (
-  <Layout>
-    <CustomizedTables title="TENANTS" columns={['Name', 'Server', 'Brokers', 'Tables']} data={data} />
-  </Layout>
-);
+const HomePage = () => {
+  return (
+    <>
+      <TenantsTable />
+      <Instances />
+      <ClusterConfig />
+    </>
+  );
+};
 
 export default HomePage;

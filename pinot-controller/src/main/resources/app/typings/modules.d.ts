@@ -17,22 +17,4 @@
  * under the License.
  */
 
-import React from 'react';
-import { AppBar, Box } from '@material-ui/core';
-import Logo from '../utils/SvgIcons';
-import BreadcrumbsComponent from './Breadcrumbs';
-
-const Header = () => (
-  <AppBar position="static">
-    <Box display="flex">
-      <Box textAlign="center" marginY="12.5px" width={250} borderRight="1px solid rgba(255,255,255,0.5)">
-        <Logo />
-      </Box>
-      <Box display="flex" alignItems="center">
-        <BreadcrumbsComponent />
-      </Box>
-    </Box>
-  </AppBar>
-);
-
-export default Header;
+declare module 'Models';

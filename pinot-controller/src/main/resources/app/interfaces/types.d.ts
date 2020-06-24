@@ -17,22 +17,31 @@
  * under the License.
  */
 
-import React from 'react';
-import { AppBar, Box } from '@material-ui/core';
-import Logo from '../utils/SvgIcons';
-import BreadcrumbsComponent from './Breadcrumbs';
+declare module 'Models' {
+  export type TableData = {
+    records: Array<Array<string | number | boolean>>,
+    columns: string[]
+  };
 
-const Header = () => (
-  <AppBar position="static">
-    <Box display="flex">
-      <Box textAlign="center" marginY="12.5px" width={250} borderRight="1px solid rgba(255,255,255,0.5)">
-        <Logo />
-      </Box>
-      <Box display="flex" alignItems="center">
-        <BreadcrumbsComponent />
-      </Box>
-    </Box>
-  </AppBar>
-);
+  export type Tenants = {
+    SERVER_TENANTS: Array<string>;
+    BROKER_TENANTS: Array<string>;
+  };
 
-export default Header;
+  export type Instances = {
+    instances: Array<string>
+  };
+
+  export type Instance = {
+    instanceName: string;
+    hostName: string;
+    enabled: boolean;
+    port: number;
+    tags: Array<string>;
+    pools?: string;
+  };
+
+  export type ClusterConfig = {
+    [name: string]: string
+  };
+}

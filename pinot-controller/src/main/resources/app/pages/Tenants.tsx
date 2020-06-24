@@ -17,22 +17,29 @@
  * under the License.
  */
 
-import React from 'react';
-import { AppBar, Box } from '@material-ui/core';
-import Logo from '../utils/SvgIcons';
-import BreadcrumbsComponent from './Breadcrumbs';
+import React, {useState, useEffect, ReactComponentElement} from 'react';
+import { TableData } from 'Models';
+import { RouteComponentProps } from 'react-router-dom';
+import CustomizedTables from '../components/Table';
+import { getTenant } from '../requests';
 
-const Header = () => (
-  <AppBar position="static">
-    <Box display="flex">
-      <Box textAlign="center" marginY="12.5px" width={250} borderRight="1px solid rgba(255,255,255,0.5)">
-        <Logo />
-      </Box>
-      <Box display="flex" alignItems="center">
-        <BreadcrumbsComponent />
-      </Box>
-    </Box>
-  </AppBar>
-);
+type Props = {
+  name: string
+};
 
-export default Header;
+const TenantPage = ({match}: RouteComponentProps<Props>) => {
+
+  const [tableData, setTableData] = useState<TableData>({
+    columns: [],
+    records: []
+  }); 
+
+  useEffect(() => {
+    getTenant(match.params.name).then(({data}) => {
+      setTableData(data);
+    });
+  }, []);
+  return <CustomizedTables title="TABLES" data={tableData} />;
+};
+
+export default TenantPage;

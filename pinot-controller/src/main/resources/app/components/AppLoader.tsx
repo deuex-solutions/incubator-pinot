@@ -17,22 +17,28 @@
  * under the License.
  */
 
-import React from 'react';
-import { AppBar, Box } from '@material-ui/core';
-import Logo from '../utils/SvgIcons';
-import BreadcrumbsComponent from './Breadcrumbs';
+import * as React from 'react';
 
-const Header = () => (
-  <AppBar position="static">
-    <Box display="flex">
-      <Box textAlign="center" marginY="12.5px" width={250} borderRight="1px solid rgba(255,255,255,0.5)">
-        <Logo />
-      </Box>
-      <Box display="flex" alignItems="center">
-        <BreadcrumbsComponent />
-      </Box>
-    </Box>
-  </AppBar>
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    backdrop: {
+      zIndex: theme.zIndex.drawer + 2,
+      color: '#fff',
+    },
+  })
 );
 
-export default Header;
+const AppLoader = () => {
+  const classes = useStyles();
+  return (
+    <Backdrop className={classes.backdrop} open>
+      <CircularProgress color="inherit" />
+    </Backdrop>
+  );
+};
+
+export default AppLoader;

@@ -26,6 +26,7 @@ import ListItem from '@material-ui/core/ListItem';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
+import { Link } from '@material-ui/core';
 
 const drawerWidth = 250;
 
@@ -65,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type Props = {
   showMemu: boolean;
-  list: string[];
+  list: Array<{name: string, link: string}>;
 };
 
 const Sidebar = ({ showMemu, list }: Props) => {
@@ -102,11 +103,13 @@ const Sidebar = ({ showMemu, list }: Props) => {
       >
         <div className={classes.drawerContainer}>
           <List disablePadding>
-            {list.map((text, index) => (
-              <Box width="210px" marginX="auto" onClick={() => handelNavigation(index)} marginBottom="5px" key={text}>
-                <ListItem color="white" button className={classes.itemContainer}>
-                  <Typography variant="subtitle2">{text}</Typography>
-                </ListItem>
+            {list.map(({name, link}) => (
+              <Box width="210px" marginX="auto" marginBottom="5px" key={name}>
+                <Link underline="none" href={link}>
+                  <ListItem color="white" button className={classes.itemContainer}>
+                    <Typography variant="subtitle2">{name}</Typography>
+                  </ListItem>
+                </Link>
               </Box>
             ))}
           </List>

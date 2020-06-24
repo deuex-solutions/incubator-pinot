@@ -23,15 +23,22 @@ import { Grid } from '@material-ui/core';
 import Sidebar from './SideBar';
 import Header from './Header';
 
+const navigationItems = [
+  { name: 'Cluster Manager', link: '/' },
+  { name: 'Query Console', link: '/query' },
+  { name: 'Zookeeper Browser', link: '/' },
+  { name: 'Swagger REST API', link: '/help' },
+];
+
 const Layout: FunctionComponent = (props) => (
   <Grid container direction="column">
     <Header />
     <Grid item xs={12}>
       <Grid container>
         <Grid item>
-          <Sidebar list={['Cluster Manager', 'Query Console', 'Zookeper Broweser', 'Swagger REST API']} showMemu={false} />
+          <Sidebar list={navigationItems} showMemu={false} />
         </Grid>
-        <Grid item xs style={{padding: 20, backgroundColor: 'white'}}>
+        <Grid item xs style={{padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto'}}>
           {props.children}
         </Grid>
       </Grid>

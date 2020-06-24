@@ -17,22 +17,37 @@
  * under the License.
  */
 
-import React from 'react';
-import { AppBar, Box } from '@material-ui/core';
-import Logo from '../utils/SvgIcons';
-import BreadcrumbsComponent from './Breadcrumbs';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console */
 
-const Header = () => (
-  <AppBar position="static">
-    <Box display="flex">
-      <Box textAlign="center" marginY="12.5px" width={250} borderRight="1px solid rgba(255,255,255,0.5)">
-        <Logo />
-      </Box>
-      <Box display="flex" alignItems="center">
-        <BreadcrumbsComponent />
-      </Box>
-    </Box>
-  </AppBar>
-);
+import axios from 'axios';
+import handleMockServer from './requests-mock';
 
-export default Header;
+const isDev = process.env.NODE_ENV !== 'production';
+
+const handleError = (error: any) => {
+  if (isDev) {
+    console.log(error);
+  }
+  return error;
+};
+
+const handleResponse = (response: any) => {
+  if (isDev) {
+    console.log(response);
+  }
+  return response;
+};
+
+const handleConfig = (config: any) => {
+  if (isDev) {
+    console.log(config);
+  }
+  return config;
+};
+
+export const baseApi = axios.create({ baseURL: '/' });
+baseApi.interceptors.request.use(handleConfig, handleError);
+baseApi.interceptors.response.use(handleResponse, handleError);
+
+handleMockServer(baseApi);
