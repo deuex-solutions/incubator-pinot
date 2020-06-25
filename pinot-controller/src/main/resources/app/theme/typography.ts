@@ -20,7 +20,7 @@
 import { ThemeOptions } from '@material-ui/core';
 
 const typography: ThemeOptions['typography'] = {
-  fontFamily: 'Noto Sans',
+  fontFamily: 'Open Sans',
 };
 
 export default typography;
