@@ -18,7 +18,8 @@
  */
 
 import * as React from 'react';
-import { withStyles, createStyles, makeStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
+import { withStyles, createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -27,7 +28,12 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { TablePagination, Typography, Toolbar } from '@material-ui/core';
 import { TableData } from 'Models';
-import { NavLink } from 'react-router-dom';
+import Link from '@material-ui/core/Link';
+import IconButton from '@material-ui/core/IconButton';
+import FirstPageIcon from '@material-ui/icons/FirstPage';
+import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
+import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
+import LastPageIcon from '@material-ui/icons/LastPage';
 import SearchBar from './SearchBar';
 
 type Props = {
@@ -36,24 +42,6 @@ type Props = {
   noOfRows?: number,
   addLinks?: boolean
 };
-
-const StyledTableCell = withStyles(() =>
-  createStyles({
-    root: {
-      padding: '.75rem',
-      borderTop: '1px solid #BDCCD9',
-    },
-    head: {
-      fontWeight: 500,
-      borderBottom: '2px solid #BDCCD9',
-    },
-    body: {
-      fontSize: 14,
-      color: '#3B454E',
-      padding: '0.5rem 0.6rem',
-    },
-  })
-)(TableCell);
 
 const StyledTableRow = withStyles(() =>
   createStyles({
@@ -73,7 +61,21 @@ const useStyles = makeStyles({
   },
   table: {
     minWidth: 700,
+    padding: '.75rem',
+    borderTop: '1px solid #BDCCD9',
   },
+  head: {
+    fontWeight: 600,
+    borderBottom: '2px solid #BDCCD9',
+  },
+  body: {
+    fontSize: 14,
+    color: '#3B454E',
+    padding: '0.5rem 0.6rem',
+  },
+  spacer: {
+    flex: '0 1 auto'
+  }
 });
 
 const useToolbarStyles = makeStyles((theme) => ({
@@ -83,8 +85,17 @@ const useToolbarStyles = makeStyles((theme) => ({
   },
   title: {
     flex: '1 1 100%',
+    fontWeight: 600,
+    letterSpacing: '2px'
   },
 }));
+
+const usePaginationStyles = makeStyles({
+  root: {
+    flexShrink: 0,
+    marginLeft: 'auto',
+  }
+});
 
 const EnhancedTableToolbar = (props: { name: string, searchValue: string, handleSearch: (val: string) => void }) => {
   const classes = useToolbarStyles();
@@ -98,11 +109,69 @@ const EnhancedTableToolbar = (props: { name: string, searchValue: string, handle
         id="tableTitle"
         component="div"
       >
-        {name}
+        {name.toUpperCase()}
       </Typography>
       <SearchBar value={searchValue} onChange={e => handleSearch(e.target.value)} />
     </Toolbar>
   );
+};
+
+function TablePaginationActions(props) {
+  const classes = usePaginationStyles();
+  const theme = useTheme();
+  const { count, page, rowsPerPage, onChangePage } = props;
+
+  const handleFirstPageButtonClick = (event) => {
+    onChangePage(event, 0);
+  };
+
+  const handleBackButtonClick = (event) => {
+    onChangePage(event, page - 1);
+  };
+
+  const handleNextButtonClick = (event) => {
+    onChangePage(event, page + 1);
+  };
+
+  const handleLastPageButtonClick = (event) => {
+    onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
+  };
+
+  return (
+    <div className={classes.root}>
+      <IconButton
+        onClick={handleFirstPageButtonClick}
+        disabled={page === 0}
+        aria-label="first page"
+      >
+        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
+      </IconButton>
+      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
+        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+      </IconButton>
+      <IconButton
+        onClick={handleNextButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="next page"
+      >
+        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+      </IconButton>
+      <IconButton
+        onClick={handleLastPageButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="last page"
+      >
+        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
+      </IconButton>
+    </div>
+  );
+}
+
+TablePaginationActions.propTypes = {
+  count: PropTypes.number.isRequired,
+  onChangePage: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired,
+  rowsPerPage: PropTypes.number.isRequired,
 };
 
 
@@ -158,22 +227,22 @@ export default function CustomizedTables({ title, data, noOfRows, addLinks }: Pr
           <TableHead>
             <TableRow>
               {data.columns.map((column, index) => (
-                <StyledTableCell key={index}>{column}</StyledTableCell>
+                <TableCell className={classes.head} key={index}>{column}</TableCell>
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody className={classes.body}>
             {filteredRows
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row, index) => (
                 <StyledTableRow key={index}>
                   {row.map((cell, idx) =>
                     addLinks && !idx ? (
-                      <NavLink to={`/tenants/${cell}`}>
-                        <StyledTableCell>{cell}</StyledTableCell>
-                      </NavLink>
+                      <TableCell key={idx}>
+                        <Link underline='always' color='inherit' href={`/tenants/${cell}`}>{cell}</Link>
+                      </TableCell>
                     ) : (
-                      <StyledTableCell key={idx}>{cell.toString()}</StyledTableCell>
+                      <TableCell>{cell.toString()}</TableCell>
                     )
                   )}
                 </StyledTableRow>
@@ -189,6 +258,8 @@ export default function CustomizedTables({ title, data, noOfRows, addLinks }: Pr
         page={page}
         onChangePage={handleChangePage}
         onChangeRowsPerPage={handleChangeRowsPerPage}
+        ActionsComponent={TablePaginationActions}
+        classes={{ 'spacer' : classes.spacer}}
       />
     </div>
   );

@@ -61,6 +61,9 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#3B454E',
       borderRadius: '4px'
     },
+    selectedItem: {
+      background: '#D8E1E8!important'
+    }
   }),
 );
 
@@ -71,6 +74,11 @@ type Props = {
 
 const Sidebar = ({ showMemu, list }: Props) => {
   const classes = useStyles();
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  const handleListItemClick = (event : React.MouseEvent<HTMLDivElement>, index : number) => {
+    setSelectedIndex(index);
+  };
 
   // TODO: Add links instead of click event listener
   const handelNavigation = (navigate: number) => {
@@ -103,10 +111,10 @@ const Sidebar = ({ showMemu, list }: Props) => {
       >
         <div className={classes.drawerContainer}>
           <List disablePadding>
-            {list.map(({name, link}) => (
+            {list.map(({name, link}, i) => (
               <Box width="210px" marginX="auto" marginBottom="5px" key={name}>
                 <Link underline="none" href={link}>
-                  <ListItem color="white" button className={classes.itemContainer}>
+                  <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
                     <Typography variant="subtitle2">{name}</Typography>
                   </ListItem>
                 </Link>
