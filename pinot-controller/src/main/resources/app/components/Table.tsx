@@ -28,12 +28,12 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { TablePagination, Typography, Toolbar } from '@material-ui/core';
 import { TableData } from 'Models';
-import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
 import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
+import { NavLink } from 'react-router-dom';
 import SearchBar from './SearchBar';
 
 type Props = {
@@ -67,11 +67,18 @@ const useStyles = makeStyles({
   head: {
     fontWeight: 600,
     borderBottom: '2px solid #BDCCD9',
+    lineHeight: '1rem'
   },
   body: {
     fontSize: 14,
     color: '#3B454E',
     padding: '0.5rem 0.6rem',
+  },
+  nodata: {
+    textAlign: 'center'
+  },
+  link:{
+    color: 'inherit'
   },
   spacer: {
     flex: '0 1 auto'
@@ -82,6 +89,7 @@ const useToolbarStyles = makeStyles((theme) => ({
   root: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(1),
+    minHeight: 48
   },
   title: {
     flex: '1 1 100%',
@@ -232,28 +240,32 @@ export default function CustomizedTables({ title, data, noOfRows, addLinks }: Pr
             </TableRow>
           </TableHead>
           <TableBody className={classes.body}>
-            {filteredRows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => (
-                <StyledTableRow key={index}>
-                  {row.map((cell, idx) =>
-                    addLinks && !idx ? (
-                      <TableCell key={idx}>
-                        <Link underline='always' color='inherit' href={`/tenants/${cell}`}>{cell}</Link>
-                      </TableCell>
-                    ) : (
-                      <TableCell>{cell.toString()}</TableCell>
-                    )
-                  )}
-                </StyledTableRow>
-              ))}
+            {filteredRows.length === 0 ?
+              <TableRow>
+                <TableCell className={classes.nodata} colSpan={data.columns.length}>No Record(s) found</TableCell>
+              </TableRow>
+              :
+              filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row, index) => (
+                  <StyledTableRow key={index}>
+                    {row.map((cell, idx) =>
+                      addLinks && !idx ? (
+                        <TableCell key={idx}>
+                          <NavLink className={classes.link} to={`/tenants/${cell}/tables`}>{cell}</NavLink>
+                        </TableCell>
+                      ) : (
+                        <TableCell>{cell.toString()}</TableCell>
+                      )
+                    )}
+                  </StyledTableRow>
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={data.records.length}
+        count={filteredRows.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onChangePage={handleChangePage}

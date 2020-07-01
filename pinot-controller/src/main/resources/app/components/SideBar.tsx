@@ -27,6 +27,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { Link } from '@material-ui/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 
 const drawerWidth = 250;
 
@@ -69,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type Props = {
   showMemu: boolean;
-  list: Array<{name: string, link: string}>;
+  list: Array<{name: string, link: string, target?: string}>;
 };
 
 const Sidebar = ({ showMemu, list }: Props) => {
@@ -111,11 +113,13 @@ const Sidebar = ({ showMemu, list }: Props) => {
       >
         <div className={classes.drawerContainer}>
           <List disablePadding>
-            {list.map(({name, link}, i) => (
+            {list.map(({name, link, target}, i) => (
               <Box width="210px" marginX="auto" marginBottom="5px" key={name}>
-                <Link underline="none" href={link}>
+                <Link underline="none" href={link} target={target}>
                   <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
-                    <Typography variant="subtitle2">{name}</Typography>
+                    <Typography variant="subtitle2">{name} &ensp;
+                      {link === '/help' ? <FontAwesomeIcon icon={faExternalLinkAlt} /> : null}
+                    </Typography>
                   </ListItem>
                 </Link>
               </Box>

@@ -44,4 +44,28 @@ declare module 'Models' {
   export type ClusterConfig = {
     [name: string]: string
   };
+
+  export type TableName = {
+    tables: Array<string>
+  };
+
+  export type TableSize = {
+    tableName: string,
+    reportedSizeInBytes: number,
+    estimatedSizeInBytes: number,
+    offlineSegments: Segments | null,
+    realtimeSegments: Segments | null,
+  };
+
+  type Segments = {
+    reportedSizeInBytes: number,
+    estimatedSizeInBytes: number,
+    missingSegments: number,
+    segments: Object
+  };
+
+  export type IdealState = {
+    OFFLINE: Object | null,
+    REALTIME: Object | null
+  };
 }

@@ -39,7 +39,7 @@ const App = () => (
           <Route exact path="/">
             <HomePage />
           </Route>
-          <Route exact path="/tenants/:name" component={TenantsPage} />
+          <Route exact path="/tenants/:name/tables" component={TenantsPage} />
         </Switch>
       </Layout>
     </Router>

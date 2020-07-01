@@ -21,7 +21,8 @@ import React, {useState, useEffect, ReactComponentElement} from 'react';
 import { TableData } from 'Models';
 import { RouteComponentProps } from 'react-router-dom';
 import CustomizedTables from '../components/Table';
-import { getTenant } from '../requests';
+import AppLoader from '../components/AppLoader';
+import { getTenantTable, getTableSize, getIdealState } from '../requests';
 
 type Props = {
   name: string
@@ -29,17 +30,60 @@ type Props = {
 
 const TenantPage = ({match}: RouteComponentProps<Props>) => {
 
+  const [fetching, setFetching] = useState(true);
   const [tableData, setTableData] = useState<TableData>({
     columns: [],
     records: []
   }); 
 
   useEffect(() => {
-    getTenant(match.params.name).then(({data}) => {
-      setTableData(data);
+    getTenantTable(match.params.name).then(({data}) => {
+      const tableArr = data.tables.map(table => table);
+      if(tableArr.length){
+        const promiseArr = tableArr.map(name => getTableSize(name));
+        const promiseArr2 = tableArr.map(name => getIdealState(name));
+
+        Promise.all(promiseArr).then(results => {
+          Promise.all(promiseArr2).then(response => {
+            setTableData({
+              columns: ['Name', 'Reported Size', 'Extimated Size', 'Number of Segments', 'Status'],
+              records: [
+                ...results.map(( result ) => {
+                  let actualValue; let idealValue;
+                  const tableSizeObj = result.data;
+                  response.map((res) => {
+                    const idealStateObj = res.data;
+                    if(tableSizeObj.realtimeSegments !== null && idealStateObj.REALTIME !== null){
+                      const {segments} = tableSizeObj.realtimeSegments;
+                      actualValue = Object.keys(segments).length;
+                      idealValue = Object.keys(idealStateObj.REALTIME).length;
+                    }else
+                    if(tableSizeObj.offlineSegments !== null && idealStateObj.OFFLINE !== null){
+                      const {segments} = tableSizeObj.offlineSegments;
+                      actualValue = Object.keys(segments).length;
+                      idealValue = Object.keys(idealStateObj.OFFLINE).length;
+                    }
+                  });
+                  return [tableSizeObj.tableName, tableSizeObj.reportedSizeInBytes, tableSizeObj.estimatedSizeInBytes, 
+                    `${actualValue} / ${idealValue}`, actualValue === idealValue ? 'Good' : 'Bad'];
+                })
+              ]
+            });
+            setFetching(false);
+          });
+        });
+      }else {
+        setTableData({
+          columns: ['Name', 'Reported Size', 'Extimated Size', 'Number of Segments', 'Status'],
+          records: []
+        });
+        setFetching(false);
+      }
     });
   }, []);
-  return <CustomizedTables title="TABLES" data={tableData} />;
+  return (
+    fetching ? <AppLoader /> : <CustomizedTables title={match.params.name} data={tableData} />
+  );
 };
 
 export default TenantPage;

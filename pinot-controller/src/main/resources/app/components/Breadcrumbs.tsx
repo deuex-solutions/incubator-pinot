@@ -35,7 +35,8 @@ const LinkRouter = (props: LinkRouterProps) => <Link {...props} component={Route
 
 const breadcrumbNameMap: { [key: string]: string } = {
   '/': 'Home',
-  '/tenants': 'Tenants'
+  '/tenants': 'Tenants',
+  '/tenants/DefaultTenant': 'DefaultTenant'
 };
 
 function BreadcrumbsComponent() {
@@ -64,7 +65,7 @@ function BreadcrumbsComponent() {
             <LinkRouter
               underline="none"
               variant="subtitle1"
-              color="primary"
+              color="textSecondary"
               to={to}
               key={to}
             >

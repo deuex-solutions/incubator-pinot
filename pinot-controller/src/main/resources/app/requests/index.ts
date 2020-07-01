@@ -18,7 +18,7 @@
  */
 
 import { AxiosResponse } from 'axios';
-import { TableData, Instances, Instance, Tenants, ClusterConfig } from 'Models';
+import { TableData, Instances, Instance, Tenants, ClusterConfig, TableName, TableSize, IdealState } from 'Models';
 import { baseApi } from '../utils/axios-config';
 
 export const getTenants = (): Promise<AxiosResponse<Tenants>> =>
@@ -26,6 +26,15 @@ export const getTenants = (): Promise<AxiosResponse<Tenants>> =>
 
 export const getTenant = (name: string): Promise<AxiosResponse<TableData>> => 
   baseApi.get(`/tenants/${name}`);
+
+export const getTenantTable = (name: string): Promise<AxiosResponse<TableName>> => 
+  baseApi.get(`/tenants/${name}/tables`);
+
+export const getTableSize = (name: string): Promise<AxiosResponse<TableSize>> => 
+  baseApi.get(`/tables/${name}/size`);
+
+export const getIdealState = (name: string): Promise<AxiosResponse<IdealState>> =>
+  baseApi.get(`/tables/${name}/idealstate`);
 
 export const getInstances = (): Promise<AxiosResponse<Instances>> =>
   baseApi.get('/instances');
