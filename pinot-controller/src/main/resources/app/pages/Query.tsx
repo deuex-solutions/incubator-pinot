@@ -245,33 +245,9 @@ const QueryPage = () => {
     handleRunNow();
   };
 
-  const downloadCSV = (data) => {
-    let csvString = `"${  data.columns.join('","')  }"`;
-    data.records.map((row) => {
-      csvString += `${String.fromCharCode(13)  }"${  row.join('","')  }"`;
-    });
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    if (navigator.msSaveBlob) { // IE 10+
-      navigator.msSaveBlob(blob, 'filename');
-    } else {
-      const link = document.createElement('a');
-      if (link.download !== undefined) { // feature detection
-        // Browsers that support HTML5 download attribute
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'Pinot Data Explorer.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    }
-  };
-
-  const downloadExcel = () => {
+  const downloadData = (exportType) => {
     const data = Utils.tableFormat(resultData);
     const fileName = 'download';
-    const exportType = 'csv';
 
     exportFromJSON({ data, fileName, exportType });
   };
@@ -352,10 +328,10 @@ const QueryPage = () => {
                 <Button variant="contained" color='primary' size='small' className={classes.btn}>
                   Copy
                 </Button>
-                <Button variant="contained" color='primary' size='small' className={classes.btn} onClick={() => downloadExcel()}>
+                <Button variant="contained" color='primary' size='small' className={classes.btn} onClick={() => downloadData('xls')}>
                   Excel
                 </Button>
-                <Button variant="contained" color='primary' size='small' onClick={() => downloadCSV(resultData)}>
+                <Button variant="contained" color='primary' size='small' onClick={() => downloadData('csv')}>
                   CSV
                 </Button>
               </Grid>
