@@ -18,14 +18,14 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import map from 'lodash/map';
 import { getInstances } from '../../requests';
 import AppLoader from '../AppLoader';
 import InstaceTable from './InstanceTable';
-import map from 'lodash/map'
 
 type DataTable = {
   [name: string]: string[]
-}
+};
 
 const Instances = () => {
   const [fetching, setFetching] = useState(true);
@@ -33,9 +33,7 @@ const Instances = () => {
   
   useEffect(() => {
     getInstances().then(({data}) => {
-      const initialVal: DataTable = {}
-      
-      // TODO: shift this to a util function
+      const initialVal: DataTable = {};
       // It will create instances list array like
       // {Controller: ['Controller1', 'Controller2'], Broker: ['Broker1', 'Broker2']} 
       const groupedData = data.instances.reduce((r, a) => {
@@ -45,7 +43,7 @@ const Instances = () => {
         return r;
       }, initialVal);
 
-      setInstances(groupedData)
+      setInstances(groupedData);
       setFetching(false);
     });
   }, []);
@@ -56,7 +54,7 @@ const Instances = () => {
     <>
       {
         map(instances, (value, key) => {
-          return <InstaceTable key={key} name={key} instances={value} />
+          return <InstaceTable key={key} name={key} instances={value} />;
         })
       }
     </>

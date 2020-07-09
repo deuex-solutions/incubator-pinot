@@ -48,11 +48,11 @@ const handleMockServer = (baseApi: AxiosInstance) => {
   const mock = new MockAdapter(baseApi);
 
   mock.onPost('/sql').reply(200, {
-    'resultTable':{'dataSchema':{'columnDataTypes':['INT'],'columnNames':['ActualElapsedTime']},'rows':[[-2147483648],[-2147483648],[250],[223],[-2147483648],[123],[-2147483648],[-2147483648],[131],[168]]},'exceptions':[],'numServersQueried':2,'numServersResponded':2,'numSegmentsQueried':41,'numSegmentsProcessed':40,'numSegmentsMatched':6,'numConsumingSegmentsQueried':10,'numDocsScanned':60,'numEntriesScannedInFilter':0,'numEntriesScannedPostFilter':60,'numGroupsLimitReached':false,'totalDocs':12421,'timeUsedMs':10,'segmentStatistics':[],'traceInfo':{},'minConsumingFreshnessTimeMs':1594114243381
+    'resultTable':{ 'dataSchema':{ 'columnDataTypes':['INT'], 'columnNames':['ActualElapsedTime'] }, 'rows':[[-2147483648], [-2147483648], [250], [223], [-2147483648], [123], [-2147483648], [-2147483648], [131], [168]] }, 'exceptions':[], 'numServersQueried':2, 'numServersResponded':2, 'numSegmentsQueried':41, 'numSegmentsProcessed':40, 'numSegmentsMatched':6, 'numConsumingSegmentsQueried':10, 'numDocsScanned':60, 'numEntriesScannedInFilter':0, 'numEntriesScannedPostFilter':60, 'numGroupsLimitReached':false, 'totalDocs':12421, 'timeUsedMs':10, 'segmentStatistics':[], 'traceInfo':{}, 'minConsumingFreshnessTimeMs':1594114243381
   });
 
   mock.onPost('/pql').reply(200, {
-    'selectionResults':{'columns':['ActualElapsedTime','AirTime','AirlineID','ArrDel15','ArrDelay','ArrDelayMinutes','ArrTime'],'results':[['-2147483648','-2147483648','19805','-2147483648','-2147483648','-2147483648','1157']]}
+    'selectionResults':{ 'columns':['ActualElapsedTime', 'AirTime', 'AirlineID', 'ArrDel15', 'ArrDelay', 'ArrDelayMinutes', 'ArrTime'], 'results':[['-2147483648', '-2147483648', '19805', '-2147483648', '-2147483648', '-2147483648', '1157']] }
   });
 
   mock.onGet('/tenants').reply(200, ResTenants);

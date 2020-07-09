@@ -26,7 +26,6 @@ import ListItem from '@material-ui/core/ListItem';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
-import { Link } from '@material-ui/core';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
@@ -86,24 +85,6 @@ const Sidebar = ({ showMemu, list }: Props) => {
     setSelectedIndex(index);
   };
 
-  // TODO: Add links instead of click event listener
-  const handelNavigation = (navigate: number) => {
-    switch(navigate) {
-      case 0:
-        window.history.pushState(null, null, '/');
-        break;
-      case 1:
-        window.history.pushState(null, null, '/query');
-        break;
-      case 2:
-        window.history.pushState(null, null, '/');
-        break;
-      case 3:
-        window.history.pushState(null, null, '/webapp');
-        break;
-    }
-  };
-
   return (
     <>
       <CssBaseline />
@@ -119,13 +100,20 @@ const Sidebar = ({ showMemu, list }: Props) => {
           <List disablePadding>
             {list.map(({name, link, target}, i) => (
               <Box width="210px" marginX="auto" marginBottom="5px" key={name}>
-                <NavLink to={link} className={classes.link} target={target}>
-                  <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
-                    <Typography variant="subtitle2">{name} &ensp;
-                      {link === '/help' ? <FontAwesomeIcon icon={faExternalLinkAlt} /> : null}
-                    </Typography>
-                  </ListItem>
-                </NavLink>
+                {link !== 'help' ? 
+                  <NavLink to={link} className={classes.link} target={target}>
+                    <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
+                      <Typography variant="subtitle2">{name} &ensp;</Typography>
+                    </ListItem>
+                  </NavLink>
+                  : 
+                  <a href={`${window.location.origin}/${link}`} className={classes.link} target={target}>
+                    <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
+                      <Typography variant="subtitle2">{name} &ensp;
+                        <FontAwesomeIcon icon={faExternalLinkAlt} />
+                      </Typography>
+                    </ListItem>
+                  </a>}
               </Box>
             ))}
           </List>

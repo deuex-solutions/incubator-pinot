@@ -40,7 +40,7 @@ const InstaceTable = ({name, instances}: Props) => {
 
     const promiseArr = [
       ...instances.map(inst => getInstance(inst))
-    ]
+    ];
 
     Promise.all(promiseArr).then(result => {
       setTableData({
@@ -48,11 +48,11 @@ const InstaceTable = ({name, instances}: Props) => {
         records: [
           ...result.map(({ data }) => (
             [data.instanceName, data.enabled, data.hostName, data.port, `${data.hostName}:${data.port}`]
-          ))    
+          ))
         ]
-      })
+      });
       setFetching(false);
-    })
+    });
   }, [instances]);
 
   return (

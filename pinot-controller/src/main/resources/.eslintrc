@@ -28,12 +28,6 @@
         "args": "none"
       }
     ],
-    "@typescript-eslint/no-explicit-any": [
-      "error",
-      {
-        "ignoreRestArgs": true
-      }
-    ],
     "max-len": [
       "warn",
       {
@@ -49,6 +43,8 @@
         "allowForLoopAfterthoughts": true
       }
     ],
+    "func-names": [0],
+    "no-param-reassign": [0],
     // TODO: Remove this when got actual data
     "react/no-array-index-key": [
       "warn"

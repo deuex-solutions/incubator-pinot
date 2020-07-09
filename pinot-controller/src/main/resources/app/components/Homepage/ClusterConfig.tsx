@@ -26,7 +26,6 @@ import CustomizedTables from '../Table';
 const ClusterConfig = () => {
 
   const [fetching, setFetching] = useState(true);
-  const [config, setConfig] = useState<ClusterConfig>();
   const [tableData, setTableData] = useState<TableData>({
     columns: [],
     records: []
@@ -34,7 +33,6 @@ const ClusterConfig = () => {
 
   useEffect(() => {
     getClusterConfig().then(({data}) => {
-      setConfig(data);
       setTableData({
         columns: ['Property', 'Value'],
         records: [

@@ -27,7 +27,7 @@ const navigationItems = [
   { name: 'Cluster Manager', link: '/' },
   { name: 'Query Console', link: '/query', },
   { name: 'Zookeeper Browser', link: '/' },
-  { name: 'Swagger REST API', link: '/help', target: '_blank' },
+  { name: 'Swagger REST API', link: 'help', target: '_blank' },
 ];
 
 const Layout: FunctionComponent = (props) => (

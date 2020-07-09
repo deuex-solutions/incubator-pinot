@@ -240,7 +240,7 @@ export default function CustomizedTables({
   const [page, setPage] = React.useState(0);
 
   const [filteredRows, setFilteredRows] = React.useState<
-    Array<Array<string | number | boolean>>
+  Array<Array<string | number | boolean>>
   >(data.records);
 
   const handleChangeRowsPerPage = (

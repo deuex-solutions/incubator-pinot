@@ -103,7 +103,7 @@ module.exports = (env, argv) => {
         template: './app/index.html',
         meta: {
           viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no',
-          description: 'Pinot Controller',
+          description: 'Pinot Controller UI',
         },
       }),
     ],

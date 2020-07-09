@@ -19,10 +19,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { TableData } from 'Models';
+import union from 'lodash/union';
 import { getTenants } from '../../requests';
 import AppLoader from '../AppLoader';
 import CustomizedTables from '../Table';
-import union from 'lodash/union';
 
 const TenantsTable = () => {
   const [fetching, setFetching] = useState(true);
@@ -33,11 +33,16 @@ const TenantsTable = () => {
       const records = union(
         data.SERVER_TENANTS,
         data.BROKER_TENANTS
-      )
+      );
       setTableData({
         columns: ['Name', 'Server', 'Broker', 'Tables'],
         records: [
-          ...records.map(record => [record, data.SERVER_TENANTS.indexOf(record) > -1 ? 1 : 0, data.BROKER_TENANTS.indexOf(record) > -1 ? 1 : 0, '-'])
+          ...records.map(record => [
+            record,
+            data.SERVER_TENANTS.indexOf(record) > -1 ? 1 : 0,
+            data.BROKER_TENANTS.indexOf(record) > -1 ? 1 : 0,
+            '-'
+          ])
         ]
       });
       setFetching(false);

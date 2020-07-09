@@ -20,7 +20,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { MuiThemeProvider } from '@material-ui/core';
-import { Switch, Route, BrowserRouter as Router } from 'react-router-dom';
+import { Switch, Route, HashRouter as Router } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import theme from './theme';
 

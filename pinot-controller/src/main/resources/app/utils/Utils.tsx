@@ -17,11 +17,6 @@
  * under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
-
-import React from 'react';
-
 const sortArray = function (sortingArr, keyName, ascendingFlag) {
   if (ascendingFlag) {
     return sortingArr.sort(function (a, b) {
@@ -49,12 +44,15 @@ const tableFormat = (data) => {
   const rows = data.records;
   const header = data.columns;
 
-  const reducer = (acc, val, index) => {
-    acc[header[index]] = val;
-    return acc;
-  };
-  const result = rows.map((row) => row.reduce(reducer, {}));
-  return result;
+  const results = [];
+  rows.forEach((singleRow) => {
+    const obj = {};
+    singleRow.forEach((val: any, index: number)=>{
+      obj[header[index]] = val;
+    });
+    results.push(obj);
+  });
+  return results;
 };
 
 export default {
