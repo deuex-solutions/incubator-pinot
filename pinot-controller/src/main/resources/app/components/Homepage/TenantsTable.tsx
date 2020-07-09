@@ -45,7 +45,7 @@ const TenantsTable = () => {
   }, []);
 
   return (
-    fetching ? <AppLoader /> : <CustomizedTables title="Tenants" data={tableData} addLinks />
+    fetching ? <AppLoader /> : <CustomizedTables title="Tenants" data={tableData} addLinks isPagination />
   );
 };
 

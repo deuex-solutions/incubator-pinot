@@ -25,7 +25,7 @@ import Header from './Header';
 
 const navigationItems = [
   { name: 'Cluster Manager', link: '/' },
-  { name: 'Query Console', link: '/query', target: '_blank' },
+  { name: 'Query Console', link: '/query', },
   { name: 'Zookeeper Browser', link: '/' },
   { name: 'Swagger REST API', link: '/help', target: '_blank' },
 ];

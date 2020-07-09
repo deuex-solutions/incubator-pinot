@@ -19,8 +19,8 @@
 
 declare module 'Models' {
   export type TableData = {
-    records: Array<Array<string | number | boolean>>,
-    columns: string[]
+    records: Array<Array<string | number | boolean>>;
+    columns: string[];
   };
 
   export type Tenants = {
@@ -29,7 +29,7 @@ declare module 'Models' {
   };
 
   export type Instances = {
-    instances: Array<string>
+    instances: Array<string>;
   };
 
   export type Instance = {
@@ -42,30 +42,53 @@ declare module 'Models' {
   };
 
   export type ClusterConfig = {
-    [name: string]: string
+    [name: string]: string;
   };
 
   export type TableName = {
-    tables: Array<string>
+    tables: Array<string>;
   };
 
   export type TableSize = {
-    tableName: string,
-    reportedSizeInBytes: number,
-    estimatedSizeInBytes: number,
-    offlineSegments: Segments | null,
-    realtimeSegments: Segments | null,
+    tableName: string;
+    reportedSizeInBytes: number;
+    estimatedSizeInBytes: number;
+    offlineSegments: Segments | null;
+    realtimeSegments: Segments | null;
   };
 
   type Segments = {
-    reportedSizeInBytes: number,
-    estimatedSizeInBytes: number,
-    missingSegments: number,
-    segments: Object
+    reportedSizeInBytes: number;
+    estimatedSizeInBytes: number;
+    missingSegments: number;
+    segments: Object;
   };
 
   export type IdealState = {
-    OFFLINE: Object | null,
-    REALTIME: Object | null
+    OFFLINE: Object | null;
+    REALTIME: Object | null;
+  };
+
+  export type QueryTables = {
+    tables: Array<string>;
+  };
+
+  export type TableSchema = {
+    dimensionFieldSpecs: Array<schema>;
+  };
+
+  type schema = {
+    name: string,
+    dataType: string
+  };
+
+  export type SQLResult = {
+    resultTable: {
+      dataSchema: {
+        columnDataTypes: Array<string>;
+        columnNames: Array<string>;
+      }
+      rows: Array<Array<number | string>>;
+    };
   };
 }

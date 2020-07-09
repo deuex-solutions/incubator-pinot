@@ -20,16 +20,13 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { MuiThemeProvider } from '@material-ui/core';
-import {
-  Switch,
-  Route,
-  BrowserRouter as Router,
-} from 'react-router-dom';
+import { Switch, Route, BrowserRouter as Router } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import theme from './theme';
 
 import Layout from './components/Layout';
 import TenantsPage from './pages/Tenants';
+import QueryPage from './pages/Query';
  
 const App = () => (
   <MuiThemeProvider theme={theme}>
@@ -40,6 +37,9 @@ const App = () => (
             <HomePage />
           </Route>
           <Route exact path="/tenants/:name/tables" component={TenantsPage} />
+          <Route exact path="/query">
+            <QueryPage />
+          </Route>
         </Switch>
       </Layout>
     </Router>

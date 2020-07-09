@@ -82,7 +82,7 @@ const TenantPage = ({match}: RouteComponentProps<Props>) => {
     });
   }, []);
   return (
-    fetching ? <AppLoader /> : <CustomizedTables title={match.params.name} data={tableData} />
+    fetching ? <AppLoader /> : <CustomizedTables title={match.params.name} data={tableData} isPagination />
   );
 };
 

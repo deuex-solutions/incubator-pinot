@@ -27,6 +27,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { Link } from '@material-ui/core';
+import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 
@@ -65,6 +66,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     selectedItem: {
       background: '#D8E1E8!important'
+    },
+    link: {
+      textDecoration: 'none'
     }
   }),
 );
@@ -115,13 +119,13 @@ const Sidebar = ({ showMemu, list }: Props) => {
           <List disablePadding>
             {list.map(({name, link, target}, i) => (
               <Box width="210px" marginX="auto" marginBottom="5px" key={name}>
-                <Link underline="none" href={link} target={target}>
+                <NavLink to={link} className={classes.link} target={target}>
                   <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
                     <Typography variant="subtitle2">{name} &ensp;
                       {link === '/help' ? <FontAwesomeIcon icon={faExternalLinkAlt} /> : null}
                     </Typography>
                   </ListItem>
-                </Link>
+                </NavLink>
               </Box>
             ))}
           </List>
