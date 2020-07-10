@@ -40,7 +40,7 @@ public class SelectionOnlyEarlyTerminationTest extends BaseSingleValueQueriesTes
    * (2 * MAX_NUM_THREADS_PER_QUERY) segments per server.
    */
   @Override
-  protected int getNumSegmentDataManagers() {
+  protected int getNumSegments() {
     return CombineOperator.MAX_NUM_THREADS_PER_QUERY * 2;
   }
 
@@ -52,7 +52,7 @@ public class SelectionOnlyEarlyTerminationTest extends BaseSingleValueQueriesTes
   @Test
   public void testSelectOnlyQuery() {
     int numThreadsPerServer = CombineOperator.MAX_NUM_THREADS_PER_QUERY;
-    int numSegmentsPerServer = getNumSegmentDataManagers();
+    int numSegmentsPerServer = getNumSegments();
 
     // LIMIT = 5, 10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240, 20480
     for (int limit = 5; limit < NUM_DOCS_PER_SEGMENT; limit *= 2) {
@@ -95,9 +95,8 @@ public class SelectionOnlyEarlyTerminationTest extends BaseSingleValueQueriesTes
    */
   @Test
   public void testSelectWithOrderByQuery() {
-    int numSegmentsPerServer = getNumSegmentDataManagers();
+    int numSegmentsPerServer = getNumSegments();
     String query = "SELECT column11, column18, column1 FROM testTable ORDER BY column11";
-    int numColumnsInSelection = 3;
     BrokerResponseNative brokerResponse = getBrokerResponseForPqlQuery(query);
     assertNotNull(brokerResponse.getSelectionResults());
     assertNull(brokerResponse.getResultTable());
@@ -105,8 +104,9 @@ public class SelectionOnlyEarlyTerminationTest extends BaseSingleValueQueriesTes
     assertEquals(brokerResponse.getNumSegmentsMatched(), numSegmentsPerServer * NUM_SERVERS);
     assertEquals(brokerResponse.getNumDocsScanned(), numSegmentsPerServer * NUM_SERVERS * NUM_DOCS_PER_SEGMENT);
     assertEquals(brokerResponse.getNumEntriesScannedInFilter(), 0);
+    // numDocsScanned * (1 order-by columns + 1 docId column) + 10 * (2 non-order-by columns) per segment
     assertEquals(brokerResponse.getNumEntriesScannedPostFilter(),
-        brokerResponse.getNumDocsScanned() * numColumnsInSelection);
+        brokerResponse.getNumDocsScanned() * 2 + 20 * numSegmentsPerServer * NUM_SERVERS);
     assertEquals(brokerResponse.getTotalDocs(), numSegmentsPerServer * NUM_SERVERS * NUM_DOCS_PER_SEGMENT);
 
     brokerResponse = getBrokerResponseForSqlQuery(query);
@@ -116,8 +116,9 @@ public class SelectionOnlyEarlyTerminationTest extends BaseSingleValueQueriesTes
     assertEquals(brokerResponse.getNumSegmentsMatched(), numSegmentsPerServer * NUM_SERVERS);
     assertEquals(brokerResponse.getNumDocsScanned(), numSegmentsPerServer * NUM_SERVERS * NUM_DOCS_PER_SEGMENT);
     assertEquals(brokerResponse.getNumEntriesScannedInFilter(), 0);
+    // numDocsScanned * (1 order-by columns + 1 docId column) + 10 * (2 non-order-by columns) per segment
     assertEquals(brokerResponse.getNumEntriesScannedPostFilter(),
-        brokerResponse.getNumDocsScanned() * numColumnsInSelection);
+        brokerResponse.getNumDocsScanned() * 2 + 20 * numSegmentsPerServer * NUM_SERVERS);
     assertEquals(brokerResponse.getTotalDocs(), numSegmentsPerServer * NUM_SERVERS * NUM_DOCS_PER_SEGMENT);
   }
 }

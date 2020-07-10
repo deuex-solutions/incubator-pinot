@@ -19,6 +19,8 @@
 package org.apache.pinot.sql.parsers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -196,13 +198,25 @@ public class CalciteSqlParser {
     return false;
   }
 
-  public static Set<String> extractIdentifiers(List<Expression> expressions) {
+  /**
+   * Extract all the identifiers from given expressions.
+   *
+   * @param expressions
+   * @param excludeAs if true, ignores the right side identifier for AS function.
+   * @return all the identifier names.
+   */
+  public static Set<String> extractIdentifiers(List<Expression> expressions, boolean excludeAs) {
     Set<String> identifiers = new HashSet<>();
     for (Expression expression : expressions) {
       if (expression.getIdentifier() != null) {
         identifiers.add(expression.getIdentifier().getName());
       } else if (expression.getFunctionCall() != null) {
-        identifiers.addAll(extractIdentifiers(expression.getFunctionCall().getOperands()));
+        if (excludeAs && expression.getFunctionCall().getOperator().equalsIgnoreCase("AS")) {
+          identifiers.addAll(extractIdentifiers(Arrays.asList(expression.getFunctionCall().getOperands().get(0)), true));
+          continue;
+        } else {
+          identifiers.addAll(extractIdentifiers(expression.getFunctionCall().getOperands(), excludeAs));
+        }
       }
     }
     return identifiers;
@@ -331,10 +345,66 @@ public class CalciteSqlParser {
       pinotQuery.setFilterExpression(updatedFilterExpression);
     }
 
+    // Rewrite GroupBy to Distinct
+    rewriteNonAggregationGroupByToDistinct(pinotQuery);
+
     // Update alias
     Map<Identifier, Expression> aliasMap = extractAlias(pinotQuery.getSelectList());
     applyAlias(aliasMap, pinotQuery);
     validate(aliasMap, pinotQuery);
+  }
+
+  /**
+   * Rewrite non-aggregate group by query to distinct query.
+   * E.g.
+   * ```
+   *   SELECT col1+col2*5 FROM foo GROUP BY col1, col2 => SELECT distinct col1+col2*5 FROM foo
+   *   SELECT col1, col2 FROM foo GROUP BY col1, col2 => SELECT distinct col1, col2 FROM foo
+   * ```
+   * @param pinotQuery
+   */
+  private static void rewriteNonAggregationGroupByToDistinct(PinotQuery pinotQuery) {
+    boolean hasAggregation = false;
+    for (Expression select : pinotQuery.getSelectList()) {
+      if (isAggregateExpression(select)) {
+        hasAggregation = true;
+      }
+    }
+    if (pinotQuery.getOrderByList() != null) {
+      for (Expression orderBy : pinotQuery.getOrderByList()) {
+        if (isAggregateExpression(orderBy)) {
+          hasAggregation = true;
+        }
+      }
+    }
+    if (!hasAggregation && pinotQuery.getGroupByListSize() > 0) {
+      Set<String> selectIdentifiers = extractIdentifiers(pinotQuery.getSelectList(), true);
+      Set<String> groupByIdentifiers = extractIdentifiers(pinotQuery.getGroupByList(), true);
+      if (groupByIdentifiers.containsAll(selectIdentifiers)) {
+        Expression distinctExpression = RequestUtils.getFunctionExpression("DISTINCT");
+        for (Expression select : pinotQuery.getSelectList()) {
+          if (isAsFunction(select)) {
+            Function asFunc = select.getFunctionCall();
+            distinctExpression.getFunctionCall().addToOperands(asFunc.getOperands().get(0));
+          } else {
+            distinctExpression.getFunctionCall().addToOperands(select);
+          }
+        }
+        pinotQuery.setSelectList(Arrays.asList(distinctExpression));
+        pinotQuery.setGroupByList(Collections.emptyList());
+      } else {
+        selectIdentifiers.removeAll(groupByIdentifiers);
+        throw new SqlCompilationException(String.format("For non-aggregation group by query, all the identifiers in select clause should be in groupBys. Found identifier: %s",
+            Arrays.toString(selectIdentifiers.toArray(new String[0]))));
+      }
+    }
+  }
+
+  private static boolean isAsFunction(Expression expression) {
+    if (expression.getFunctionCall() != null && expression.getFunctionCall().getOperator().equalsIgnoreCase("AS")) {
+      return true;
+    }
+    return false;
   }
 
   private static void invokeCompileTimeFunctions(PinotQuery pinotQuery) {
@@ -662,7 +732,9 @@ public class CalciteSqlParser {
   private static String extractFunctionName(SqlBasicCall funcSqlNode) {
     String funcName = funcSqlNode.getOperator().getKind().name();
     if (funcSqlNode.getOperator().getKind() == SqlKind.OTHER_FUNCTION) {
-      funcName = funcSqlNode.getOperator().getName();
+      // in-built functions like REGEXP_LIKE, TEXT_MATCH, timeConvert etc that are not natively
+      // supported by Calcite grammar
+      funcName = funcSqlNode.getOperator().getName().toUpperCase();
     }
     if (funcName.equalsIgnoreCase(SqlKind.COUNT.toString()) && (funcSqlNode.getFunctionQuantifier() != null)
         && funcSqlNode.getFunctionQuantifier().toValue().equalsIgnoreCase(AggregationFunctionType.DISTINCT.getName())) {
@@ -731,7 +803,7 @@ public class CalciteSqlParser {
       if (functionCall.getOperator().equalsIgnoreCase(SqlKind.AS.toString())) {
         return isLiteralOnlyExpression(functionCall.getOperands().get(0));
       }
-      return true;
+      return false;
     }
     return false;
   }

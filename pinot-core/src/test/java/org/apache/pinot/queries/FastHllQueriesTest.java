@@ -27,8 +27,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.pinot.common.response.broker.BrokerResponseNative;
 import org.apache.pinot.common.segment.ReadMode;
-import org.apache.pinot.core.data.manager.SegmentDataManager;
-import org.apache.pinot.core.data.manager.offline.ImmutableSegmentDataManager;
 import org.apache.pinot.core.indexsegment.IndexSegment;
 import org.apache.pinot.core.indexsegment.generator.SegmentGeneratorConfig;
 import org.apache.pinot.core.indexsegment.immutable.ImmutableSegment;
@@ -85,7 +83,7 @@ public class FastHllQueriesTest extends BaseQueriesTest {
 
   private IndexSegment _indexSegment;
   // Contains 2 identical index segments
-  private List<SegmentDataManager> _segmentDataManagers;
+  private List<IndexSegment> _indexSegments;
 
   @Override
   protected String getFilter() {
@@ -98,8 +96,8 @@ public class FastHllQueriesTest extends BaseQueriesTest {
   }
 
   @Override
-  protected List<SegmentDataManager> getSegmentDataManagers() {
-    return _segmentDataManagers;
+  protected List<IndexSegment> getIndexSegments() {
+    return _indexSegments;
   }
 
   @Test
@@ -109,7 +107,7 @@ public class FastHllQueriesTest extends BaseQueriesTest {
 
     // Test inner segment queries
     // Test base query
-    AggregationOperator aggregationOperator = getOperatorForQuery(BASE_QUERY);
+    AggregationOperator aggregationOperator = getOperatorForPqlQuery(BASE_QUERY);
     IntermediateResultsBlock resultsBlock = aggregationOperator.nextBlock();
     ExecutionStatistics executionStatistics = aggregationOperator.getExecutionStatistics();
     QueriesTestUtils.testInnerSegmentExecutionStatistics(executionStatistics, 30000L, 0L, 60000L, 30000L);
@@ -117,7 +115,7 @@ public class FastHllQueriesTest extends BaseQueriesTest {
     Assert.assertEquals(((HyperLogLog) aggregationResult.get(0)).cardinality(), 21L);
     Assert.assertEquals(((HyperLogLog) aggregationResult.get(1)).cardinality(), 1762L);
     // Test query with filter
-    aggregationOperator = getOperatorForQueryWithFilter(BASE_QUERY);
+    aggregationOperator = getOperatorForPqlQueryWithFilter(BASE_QUERY);
     resultsBlock = aggregationOperator.nextBlock();
     executionStatistics = aggregationOperator.getExecutionStatistics();
     QueriesTestUtils.testInnerSegmentExecutionStatistics(executionStatistics, 6129L, 84134L, 12258L, 30000L);
@@ -125,7 +123,7 @@ public class FastHllQueriesTest extends BaseQueriesTest {
     Assert.assertEquals(((HyperLogLog) aggregationResult.get(0)).cardinality(), 17L);
     Assert.assertEquals(((HyperLogLog) aggregationResult.get(1)).cardinality(), 1197L);
     // Test query with group-by
-    AggregationGroupByOperator aggregationGroupByOperator = getOperatorForQuery(BASE_QUERY + GROUP_BY);
+    AggregationGroupByOperator aggregationGroupByOperator = getOperatorForPqlQuery(BASE_QUERY + GROUP_BY);
     resultsBlock = aggregationGroupByOperator.nextBlock();
     executionStatistics = aggregationGroupByOperator.getExecutionStatistics();
     QueriesTestUtils.testInnerSegmentExecutionStatistics(executionStatistics, 30000L, 0L, 90000L, 30000L);
@@ -196,8 +194,7 @@ public class FastHllQueriesTest extends BaseQueriesTest {
 
     ImmutableSegment immutableSegment = ImmutableSegmentLoader.load(new File(INDEX_DIR, SEGMENT_NAME), ReadMode.heap);
     _indexSegment = immutableSegment;
-    _segmentDataManagers = Arrays
-        .asList(new ImmutableSegmentDataManager(immutableSegment), new ImmutableSegmentDataManager(immutableSegment));
+    _indexSegments = Arrays.asList(immutableSegment, immutableSegment);
   }
 
   private void deleteSegment() {

@@ -30,14 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.pinot.core.io.compression.ChunkCompressorFactory;
 import org.apache.pinot.core.segment.name.FixedSegmentNameGenerator;
 import org.apache.pinot.core.segment.name.SegmentNameGenerator;
 import org.apache.pinot.core.segment.name.SimpleSegmentNameGenerator;
-import org.apache.pinot.core.startree.v2.builder.StarTreeV2BuilderConfig;
 import org.apache.pinot.spi.config.table.FieldConfig;
 import org.apache.pinot.spi.config.table.IndexingConfig;
 import org.apache.pinot.spi.config.table.SegmentPartitionConfig;
@@ -48,8 +46,6 @@ import org.apache.pinot.spi.data.DateTimeFormatSpec;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.apache.pinot.spi.data.FieldSpec.FieldType;
 import org.apache.pinot.spi.data.Schema;
-import org.apache.pinot.spi.data.TimeFieldSpec;
-import org.apache.pinot.spi.data.TimeGranularitySpec;
 import org.apache.pinot.spi.data.readers.FileFormat;
 import org.apache.pinot.spi.data.readers.RecordReaderConfig;
 import org.joda.time.format.DateTimeFormat;
@@ -67,6 +63,7 @@ public class SegmentGeneratorConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SegmentGeneratorConfig.class);
 
+  private TableConfig _tableConfig;
   private Map<String, String> _customProperties = new HashMap<>();
   private Set<String> _rawIndexCreationColumns = new HashSet<>();
   private Map<String, ChunkCompressorFactory.CompressionType> _rawIndexCompressionType = new HashMap<>();
@@ -89,8 +86,8 @@ public class SegmentGeneratorConfig {
   private SegmentVersion _segmentVersion = SegmentVersion.v3;
   private Schema _schema = null;
   private RecordReaderConfig _readerConfig = null;
+  private List<StarTreeIndexConfig> _starTreeIndexConfigs = null;
   private boolean _enableDefaultStarTree = false;
-  private List<StarTreeV2BuilderConfig> _starTreeV2BuilderConfigs = null;
   private String _creatorVersion = null;
   private SegmentNameGenerator _segmentNameGenerator = null;
   private SegmentPartitionConfig _segmentPartitionConfig = null;
@@ -122,6 +119,8 @@ public class SegmentGeneratorConfig {
     Preconditions.checkNotNull(schema);
     Preconditions.checkNotNull(tableConfig);
     setSchema(schema);
+
+    _tableConfig = tableConfig;
 
     // NOTE: SegmentGeneratorConfig#setSchema doesn't set the time column anymore. timeColumnName is expected to be read from table config.
     String timeColumnName = null;
@@ -156,16 +155,9 @@ public class SegmentGeneratorConfig {
       }
       _segmentPartitionConfig = indexingConfig.getSegmentPartitionConfig();
 
-      // Star-tree V2 configs
+      // Star-tree configs
+      setStarTreeIndexConfigs(indexingConfig.getStarTreeIndexConfigs());
       setEnableDefaultStarTree(indexingConfig.isEnableDefaultStarTree());
-      List<StarTreeIndexConfig> starTreeIndexConfigs = indexingConfig.getStarTreeIndexConfigs();
-      if (starTreeIndexConfigs != null && !starTreeIndexConfigs.isEmpty()) {
-        List<StarTreeV2BuilderConfig> starTreeV2BuilderConfigs = new ArrayList<>(starTreeIndexConfigs.size());
-        for (StarTreeIndexConfig starTreeIndexConfig : starTreeIndexConfigs) {
-          starTreeV2BuilderConfigs.add(StarTreeV2BuilderConfig.fromIndexConfig(starTreeIndexConfig));
-        }
-        setStarTreeV2BuilderConfigs(starTreeV2BuilderConfigs);
-      }
 
       // NOTE: There are 2 ways to configure creating inverted index during segment generation:
       //       - Set 'generate.inverted.index.before.push' to 'true' in custom config (deprecated)
@@ -190,7 +182,6 @@ public class SegmentGeneratorConfig {
     }
   }
 
-  @Nonnull
   public Map<String, Map<String, String>> getColumnProperties() {
     return _columnProperties;
   }
@@ -198,7 +189,7 @@ public class SegmentGeneratorConfig {
   /**
    * Set time column details using the given time column
    */
-  public void setTime(@Nullable String timeColumnName, Schema schema) {
+  private void setTime(@Nullable String timeColumnName, Schema schema) {
     if (timeColumnName != null) {
       DateTimeFieldSpec dateTimeFieldSpec = schema.getSpecForTimeColumn(timeColumnName);
       if (dateTimeFieldSpec != null) {
@@ -241,7 +232,7 @@ public class SegmentGeneratorConfig {
     _customProperties.putAll(properties);
   }
 
-  public void setSimpleDateFormat(@Nonnull String simpleDateFormat) {
+  public void setSimpleDateFormat(String simpleDateFormat) {
     _timeColumnType = TimeColumnType.SIMPLE_DATE;
     try {
       DateTimeFormat.forPattern(simpleDateFormat);
@@ -483,7 +474,11 @@ public class SegmentGeneratorConfig {
     return _schema;
   }
 
-  public void setSchema(Schema schema) {
+  public TableConfig getTableConfig() {
+    return _tableConfig;
+  }
+
+  private void setSchema(Schema schema) {
     Preconditions.checkNotNull(schema);
     _schema = schema;
 
@@ -509,20 +504,21 @@ public class SegmentGeneratorConfig {
     _readerConfig = readerConfig;
   }
 
+  @Nullable
+  public List<StarTreeIndexConfig> getStarTreeIndexConfigs() {
+    return _starTreeIndexConfigs;
+  }
+
+  public void setStarTreeIndexConfigs(List<StarTreeIndexConfig> starTreeIndexConfigs) {
+    _starTreeIndexConfigs = starTreeIndexConfigs;
+  }
+
   public boolean isEnableDefaultStarTree() {
     return _enableDefaultStarTree;
   }
 
   public void setEnableDefaultStarTree(boolean enableDefaultStarTree) {
     _enableDefaultStarTree = enableDefaultStarTree;
-  }
-
-  public List<StarTreeV2BuilderConfig> getStarTreeV2BuilderConfigs() {
-    return _starTreeV2BuilderConfigs;
-  }
-
-  public void setStarTreeV2BuilderConfigs(List<StarTreeV2BuilderConfig> starTreeV2BuilderConfigs) {
-    _starTreeV2BuilderConfigs = starTreeV2BuilderConfigs;
   }
 
   public SegmentNameGenerator getSegmentNameGenerator() {
