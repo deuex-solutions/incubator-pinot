@@ -36,7 +36,7 @@ module.exports = (env, argv) => {
     entry: './app/App.tsx',
     output: {
       path: path.resolve(__dirname, 'dist/webapp'),
-      filename: './js_new/main.js'
+      filename: './js/main.js'
     },
     devServer: {
       compress: true,
