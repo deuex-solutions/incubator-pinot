@@ -38,10 +38,13 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import { NavLink } from 'react-router-dom';
 import Chip from '@material-ui/core/Chip';
+import _ from 'lodash';
 import SearchBar from './SearchBar';
-// import Utils from '../utils/Utils';
+import Utils from '../utils/Utils';
 
 type Props = {
   title?: string;
@@ -49,8 +52,8 @@ type Props = {
   noOfRows?: number;
   addLinks?: boolean;
   isPagination?: boolean;
-  cellClickCallback?: Function,
-  isCellClickable?: boolean,
+  cellClickCallback?: Function;
+  isCellClickable?: boolean;
 };
 
 const StyledTableRow = withStyles((theme) =>
@@ -82,6 +85,7 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 600,
     borderBottom: '2px solid #BDCCD9',
     lineHeight: '1rem',
+    cursor: 'pointer'
   },
   body: {
     fontSize: 14,
@@ -232,13 +236,14 @@ export default function CustomizedTables({
   cellClickCallback,
   isCellClickable,
 }: Props) {
+  const [finalData, setFinalData] = React.useState(Utils.tableFormat(data));
+
+  const [order, setOrder] = React.useState(false);
+  const [columnClicked, setColumnClicked] = React.useState(data.columns[0]);
+
   const classes = useStyles();
   const [rowsPerPage, setRowsPerPage] = React.useState(noOfRows || 10);
   const [page, setPage] = React.useState(0);
-
-  const [filteredRows, setFilteredRows] = React.useState<
-  Array<Array<string | number | boolean>>
-  >(data.records);
 
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -257,7 +262,7 @@ export default function CustomizedTables({
 
   const filterSearchResults = React.useCallback((str: string) => {
     if (str === '') {
-      setFilteredRows(data.records);
+      setFinalData(finalData);
     } else {
       const filteredRescords = data.records.filter((record) => {
         const searchFound = record.find(
@@ -268,9 +273,9 @@ export default function CustomizedTables({
         }
         return false;
       });
-      setFilteredRows(filteredRescords);
+      setFinalData(filteredRescords);
     }
-  }, [data, setFilteredRows]);
+  }, [data, setFinalData]);
 
   React.useEffect(() => {
     clearTimeout(timeoutId.current);
@@ -319,14 +324,33 @@ export default function CustomizedTables({
           <TableHead>
             <TableRow>
               {data.columns.map((column, index) => (
-                <TableCell className={classes.head} key={index}>
-                  {column}
+                <TableCell
+                  className={classes.head}
+                  key={index}
+                  onClick={() => {
+                    setFinalData(_.orderBy(finalData, column, order ? 'asc' : 'desc'));
+                    setOrder(!order);
+                    setColumnClicked(column);
+                  }}
+                >
+                  <span style={{ display: 'flex' }}>
+                    {column}
+                    {column === columnClicked ? order ? (
+                      <ArrowDropDownIcon
+                        color="primary"
+                      />
+                    ) : (
+                      <ArrowDropUpIcon
+                        color="primary"
+                      />
+                    ) : null}
+                  </span>
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody className={classes.body}>
-            {filteredRows.length === 0 ? (
+            {finalData.length === 0 ? (
               <TableRow>
                 <TableCell
                   className={classes.nodata}
@@ -336,11 +360,11 @@ export default function CustomizedTables({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredRows
+              finalData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => (
                   <StyledTableRow key={index} hover>
-                    {row.map((cell, idx) =>
+                    {Object.values(row).map((cell, idx) =>
                       addLinks && !idx ? (
                         <TableCell key={idx}>
                           <NavLink
@@ -352,7 +376,7 @@ export default function CustomizedTables({
                         </TableCell>
                       ) : (
                         <TableCell key={idx} className={isCellClickable ? classes.isCellClickable : ''} onClick={() => {cellClickCallback && cellClickCallback(cell);}}>
-                          {styleCell(cell)}
+                          {styleCell(cell.toString())}
                         </TableCell>
                       )
                     )}
@@ -362,11 +386,11 @@ export default function CustomizedTables({
           </TableBody>
         </Table>
       </TableContainer>
-      {isPagination ? (
+      {isPagination && finalData.length > 10 ? (
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredRows.length}
+          count={finalData.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}

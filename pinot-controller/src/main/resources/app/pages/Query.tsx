@@ -20,6 +20,8 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Grid, Checkbox, Button } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { TableData, SQLResult } from 'Models';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 import '../../node_modules/codemirror/lib/codemirror.css';
@@ -27,11 +29,7 @@ import '../../node_modules/codemirror/theme/material.css';
 import _ from 'lodash';
 import exportFromJSON from 'export-from-json';
 import Utils from '../utils/Utils';
-import {
-  getQueryTables,
-  getTableSchema,
-  getQueryResult,
-} from '../requests';
+import { getQueryTables, getTableSchema, getQueryResult } from '../requests';
 import AppLoader from '../components/AppLoader';
 import CustomizedTables from '../components/Table';
 
@@ -57,10 +55,15 @@ const useStyles = makeStyles((theme) => ({
     border: '1px solid #BDCCD9',
   },
   btn: {
-    marginRight: '10px'
+    margin: '10px 10px 0 0',
+    height: 30,
   },
   checkBox: {
     margin: '20px 0',
+  },
+  actionBtns: {
+    margin: '20px 0',
+    height: 50,
   },
   runNowBtn: {
     marginLeft: 'auto',
@@ -104,6 +107,8 @@ const QueryPage = () => {
     querySyntaxPQL: false,
   });
 
+  const [copyMsg, showCopyMsg] = React.useState(false);
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked({ ...checked, [event.target.name]: event.target.checked });
   };
@@ -139,7 +144,7 @@ const QueryPage = () => {
 
     getQueryResult(params, url).then(({ data }) => {
       let queryResponse = null;
-      
+
       queryResponse = getAsObject(data);
 
       let dataArray = [];
@@ -183,7 +188,7 @@ const QueryPage = () => {
             );
           }
         }
-      } else if ( queryResponse.resultTable?.dataSchema?.columnNames?.length) {
+      } else if (queryResponse.resultTable?.dataSchema?.columnNames?.length) {
         columnList = queryResponse.resultTable.dataSchema.columnNames;
         dataArray = queryResponse.resultTable.rows;
       }
@@ -207,7 +212,7 @@ const QueryPage = () => {
         }),
       });
     });
-  
+
     const query = `select * from ${tableName} limit 10`;
     setInputQuery(query);
     setSelectedTable(tableName);
@@ -221,10 +226,36 @@ const QueryPage = () => {
     exportFromJSON({ data, fileName, exportType });
   };
 
+  const copyToClipboard = () => {
+    // Create an auxiliary hidden input
+    const aux = document.createElement('input');
+
+    // Get the text from the element passed into the input
+    aux.setAttribute('value', JSON.stringify(resultData));
+
+    // Append the aux input to the body
+    document.body.appendChild(aux);
+
+    // Highlight the content
+    aux.select();
+
+    // Execute the copy command
+    document.execCommand('copy');
+
+    // Remove the input from the body
+    document.body.removeChild(aux);
+
+    showCopyMsg(true);
+
+    setTimeout(() => {
+      showCopyMsg(false);
+    }, 3000);
+  };
+
   useEffect(() => {
     getQueryTables().then(({ data }) => {
       setTableList({
-        columns: [],
+        columns: ['Tables'],
         records: data.tables.map((table) => {
           return [table];
         }),
@@ -247,7 +278,11 @@ const QueryPage = () => {
         />
 
         {tableSchema.records.length ? (
-          <CustomizedTables title="Schema" data={tableSchema} isPagination={false} />
+          <CustomizedTables
+            title="Schema"
+            data={tableSchema}
+            isPagination={false}
+          />
         ) : null}
       </Grid>
       <Grid item xs={9} className={classes.rightPanel}>
@@ -289,20 +324,46 @@ const QueryPage = () => {
             </Button>
           </Grid>
         </Grid>
-        
+
         <Grid item xs style={{ backgroundColor: 'white' }}>
           {resultData.records.length ? (
             <>
-              <Grid container className={classes.checkBox}>
-                <Button variant="contained" color='primary' size='small' className={classes.btn}>
-                  Copy
-                </Button>
-                <Button variant="contained" color='primary' size='small' className={classes.btn} onClick={() => downloadData('xls')}>
+              <Grid container className={classes.actionBtns}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  className={classes.btn}
+                  onClick={() => downloadData('xls')}
+                >
                   Excel
                 </Button>
-                <Button variant="contained" color='primary' size='small' onClick={() => downloadData('csv')}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  className={classes.btn}
+                  onClick={() => downloadData('csv')}
+                >
                   CSV
                 </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  className={classes.btn}
+                  onClick={() => copyToClipboard()}
+                >
+                  Copy
+                </Button>
+                {copyMsg ? (
+                  <Alert
+                    icon={<FileCopyIcon fontSize="inherit" />}
+                    severity="info"
+                  >
+                    Copied {resultData.records.length} rows to Clipboard
+                  </Alert>
+                ) : null}
               </Grid>
               <CustomizedTables
                 title={selectedTable}
