@@ -41,7 +41,7 @@ import LastPageIcon from '@material-ui/icons/LastPage';
 import { NavLink } from 'react-router-dom';
 import Chip from '@material-ui/core/Chip';
 import SearchBar from './SearchBar';
-import Utils from '../utils/Utils';
+// import Utils from '../utils/Utils';
 
 type Props = {
   title?: string;
@@ -49,15 +49,15 @@ type Props = {
   noOfRows?: number;
   addLinks?: boolean;
   isPagination?: boolean;
-  getCellValue?: Function,
+  cellClickCallback?: Function,
   isCellClickable?: boolean,
 };
 
-const StyledTableRow = withStyles(() =>
+const StyledTableRow = withStyles((theme) =>
   createStyles({
     root: {
-      '&:nth-of-type(odd)': {
-        // backgroundColor: theme.palette.action.hover,
+      '&:nth-of-type(even)': {
+        backgroundColor: theme.palette.action.hover,
       },
     },
   })
@@ -223,16 +223,13 @@ TablePaginationActions.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
 };
 
-
-let timeout: NodeJS.Timeout;
-
 export default function CustomizedTables({
   title,
   data,
   noOfRows,
   addLinks,
   isPagination,
-  getCellValue,
+  cellClickCallback,
   isCellClickable,
 }: Props) {
   const classes = useStyles();
@@ -256,14 +253,9 @@ export default function CustomizedTables({
 
   const [search, setSearch] = React.useState<string>('');
 
-  React.useEffect(() => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      filterSearchResults(search);
-    }, 500);
-  }, [search, timeout]);
+  const timeoutId = React.useRef<NodeJS.Timeout>();
 
-  const filterSearchResults = (str: string) => {
+  const filterSearchResults = React.useCallback((str: string) => {
     if (str === '') {
       setFilteredRows(data.records);
     } else {
@@ -278,7 +270,18 @@ export default function CustomizedTables({
       });
       setFilteredRows(filteredRescords);
     }
-  };
+  }, [data, setFilteredRows]);
+
+  React.useEffect(() => {
+    clearTimeout(timeoutId.current);
+    timeoutId.current = setTimeout(() => {
+      filterSearchResults(search);
+    }, 200);
+
+    return () => {
+      clearTimeout(timeoutId.current);
+    };
+  }, [search, timeoutId, filterSearchResults]);
 
   const styleCell = (str: string | number | boolean) => {
     if (str === 'Good') {
@@ -312,7 +315,7 @@ export default function CustomizedTables({
             handleSearch={(val: string) => setSearch(val)}
           />
         ) : null}
-        <Table className={classes.table}>
+        <Table className={classes.table} size="small" stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
               {data.columns.map((column, index) => (
@@ -336,7 +339,7 @@ export default function CustomizedTables({
               filteredRows
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => (
-                  <StyledTableRow key={index}>
+                  <StyledTableRow key={index} hover>
                     {row.map((cell, idx) =>
                       addLinks && !idx ? (
                         <TableCell key={idx}>
@@ -348,7 +351,7 @@ export default function CustomizedTables({
                           </NavLink>
                         </TableCell>
                       ) : (
-                        <TableCell className={isCellClickable ? classes.isCellClickable : ''} onClick={() => {getCellValue && getCellValue(cell);}}>
+                        <TableCell key={idx} className={isCellClickable ? classes.isCellClickable : ''} onClick={() => {cellClickCallback && cellClickCallback(cell);}}>
                           {styleCell(cell)}
                         </TableCell>
                       )

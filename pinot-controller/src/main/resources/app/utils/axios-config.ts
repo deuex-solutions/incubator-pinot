@@ -17,11 +17,9 @@
  * under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 
 import axios from 'axios';
-import handleMockServer from './requests-mock';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -49,5 +47,3 @@ const handleConfig = (config: any) => {
 export const baseApi = axios.create({ baseURL: '/' });
 baseApi.interceptors.request.use(handleConfig, handleError);
 baseApi.interceptors.response.use(handleResponse, handleError);
-
-handleMockServer(baseApi);

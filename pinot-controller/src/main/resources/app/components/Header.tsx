@@ -18,15 +18,20 @@
  */
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { AppBar, Box } from '@material-ui/core';
-import Logo from '../utils/SvgIcons';
+import Logo from './Logo';
 import BreadcrumbsComponent from './Breadcrumbs';
 
-const Header = () => (
+type Props = {
+  highlightSidebarLink: (id: number) => void;
+};
+
+const Header = ({ highlightSidebarLink }: Props) => (
   <AppBar position="static">
     <Box display="flex">
       <Box textAlign="center" marginY="12.5px" width={250} borderRight="1px solid rgba(255,255,255,0.5)">
-        <Logo />
+        <Link to="/"><Logo onClick={(event) => highlightSidebarLink(1)} /></Link>
       </Box>
       <Box display="flex" alignItems="center">
         <BreadcrumbsComponent />

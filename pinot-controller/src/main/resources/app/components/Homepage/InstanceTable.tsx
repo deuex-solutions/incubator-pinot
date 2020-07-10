@@ -28,7 +28,7 @@ type Props = {
   instances: string[]
 };
 
-const InstaceTable = ({name, instances}: Props) => {
+const InstaceTable = ({ name, instances }: Props) => {
 
   const [fetching, setFetching] = useState(true);
   const [tableData, setTableData] = useState<TableData>({

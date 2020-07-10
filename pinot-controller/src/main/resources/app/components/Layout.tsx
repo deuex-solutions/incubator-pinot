@@ -17,33 +17,42 @@
  * under the License.
  */
 
-import { FunctionComponent, Children } from 'react';
 import * as React from 'react';
 import { Grid } from '@material-ui/core';
 import Sidebar from './SideBar';
 import Header from './Header';
 
 const navigationItems = [
-  { name: 'Cluster Manager', link: '/' },
-  { name: 'Query Console', link: '/query', },
-  { name: 'Zookeeper Browser', link: '/' },
-  { name: 'Swagger REST API', link: 'help', target: '_blank' },
+  { id: 1, name: 'Cluster Manager', link: '/' },
+  { id: 2, name: 'Query Console', link: '/query', },
+  { id: 3, name: 'Zookeeper Browser', link: '/' },
+  { id: 4, name: 'Swagger REST API', link: 'help', target: '_blank' },
 ];
 
-const Layout: FunctionComponent = (props) => (
-  <Grid container direction="column">
-    <Header />
-    <Grid item xs={12}>
-      <Grid container>
-        <Grid item>
-          <Sidebar list={navigationItems} showMemu={false} />
-        </Grid>
-        <Grid item xs style={{padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto'}}>
-          {props.children}
+const Layout = (props) => {
+  const hash = `/${window.location.hash.split('/')[1]}`;
+  const routeObj = navigationItems.find((obj)=>{ return obj.link === hash;});
+
+  const [selectedId, setSelectedId] = React.useState(routeObj?.id || 1);
+
+  const highlightSidebarLink = (id: number) => {
+    setSelectedId(id);
+  };
+  return (
+    <Grid container direction="column">
+      <Header highlightSidebarLink={highlightSidebarLink} />
+      <Grid item xs={12}>
+        <Grid container>
+          <Grid item>
+            <Sidebar list={navigationItems} showMemu={false} selectedId={selectedId} highlightSidebarLink={highlightSidebarLink} />
+          </Grid>
+          <Grid item xs style={{ padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
+            {props.children}
+          </Grid>
         </Grid>
       </Grid>
     </Grid>
-  </Grid>
-);
+  );
+};
 
 export default Layout;

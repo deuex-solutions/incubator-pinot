@@ -74,16 +74,13 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type Props = {
   showMemu: boolean;
-  list: Array<{name: string, link: string, target?: string}>;
+  list: Array<{id:number, name: string, link: string, target?: string}>;
+  selectedId: number;
+  highlightSidebarLink: (id: number) => void;
 };
 
-const Sidebar = ({ showMemu, list }: Props) => {
+const Sidebar = ({ showMemu, list, selectedId, highlightSidebarLink }: Props) => {
   const classes = useStyles();
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-
-  const handleListItemClick = (event : React.MouseEvent<HTMLDivElement>, index : number) => {
-    setSelectedIndex(index);
-  };
 
   return (
     <>
@@ -98,17 +95,17 @@ const Sidebar = ({ showMemu, list }: Props) => {
       >
         <div className={classes.drawerContainer}>
           <List disablePadding>
-            {list.map(({name, link, target}, i) => (
+            {list.map(({ id, name, link, target }) => (
               <Box width="210px" marginX="auto" marginBottom="5px" key={name}>
                 {link !== 'help' ? 
                   <NavLink to={link} className={classes.link} target={target}>
-                    <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
+                    <ListItem color="white" button className={`${classes.itemContainer} ${selectedId === id ? classes.selectedItem : ''}`} selected={selectedId === id} onClick={(event) => highlightSidebarLink(id)}>
                       <Typography variant="subtitle2">{name} &ensp;</Typography>
                     </ListItem>
                   </NavLink>
                   : 
                   <a href={`${window.location.origin}/${link}`} className={classes.link} target={target}>
-                    <ListItem color="white" button className={`${classes.itemContainer} ${selectedIndex === i ? classes.selectedItem : ''}`} selected={selectedIndex === i} onClick={(event) => handleListItemClick(event, i)}>
+                    <ListItem color="white" button className={`${classes.itemContainer}`}>
                       <Typography variant="subtitle2">{name} &ensp;
                         <FontAwesomeIcon icon={faExternalLinkAlt} />
                       </Typography>

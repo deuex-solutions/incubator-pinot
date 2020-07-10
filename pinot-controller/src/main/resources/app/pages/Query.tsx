@@ -30,7 +30,6 @@ import Utils from '../utils/Utils';
 import {
   getQueryTables,
   getTableSchema,
-  getSqlResult,
   getQueryResult,
 } from '../requests';
 import AppLoader from '../components/AppLoader';
@@ -120,24 +119,24 @@ const QueryPage = () => {
     return str;
   };
 
-  const handleRunNow = () => {
+  const handleRunNow = (query?: string) => {
     setFetching(true);
     let url;
     let params;
-    if (checked.querySyntaxPQL === true) {
+    if (checked.querySyntaxPQL) {
       url = 'pql';
       params = JSON.stringify({
-        pql: inputQuery.trim(),
+        pql: query || inputQuery.trim(),
         trace: checked.tracing,
       });
     } else {
       url = 'sql';
       params = JSON.stringify({
-        sql: inputQuery.trim(),
+        sql: query || inputQuery.trim(),
         trace: checked.tracing,
       });
     }
-    setChecked(checked);
+
     getQueryResult(params, url).then(({ data }) => {
       let queryResponse = null;
       
@@ -149,18 +148,9 @@ const QueryPage = () => {
         if (queryResponse) {
           if (queryResponse.selectionResults) {
             // Selection query
-            columnList = _.map(
-              queryResponse.selectionResults.columns,
-              (columnName) => {
-                return columnName;
-              }
-            );
+            columnList = queryResponse.selectionResults.columns;
             dataArray = queryResponse.selectionResults.results;
-          } else if (
-            queryResponse.aggregationResults &&
-            queryResponse.aggregationResults.length > 0 &&
-            !queryResponse.aggregationResults[0].groupByResult
-          ) {
+          } else if (!queryResponse.aggregationResults[0]?.groupByResult) {
             // Simple aggregation query
             columnList = _.map(
               queryResponse.aggregationResults,
@@ -174,12 +164,9 @@ const QueryPage = () => {
                 return aggregationResult.value;
               })
             );
-          } else if (
-            queryResponse.aggregationResults &&
-            queryResponse.aggregationResults.length > 0 &&
-            queryResponse.aggregationResults[0].groupByResult
-          ) {
+          } else if (queryResponse.aggregationResults[0]?.groupByResult) {
             // Aggregation group by query
+            // TODO - Revisit
             const columns = queryResponse.aggregationResults[0].groupByColumns;
             columns.push(queryResponse.aggregationResults[0].function);
             columnList = _.map(columns, (columnName) => {
@@ -196,17 +183,8 @@ const QueryPage = () => {
             );
           }
         }
-      } else if (
-        queryResponse.resultTable &&
-        queryResponse.resultTable.rows &&
-        queryResponse.resultTable.rows.length > 0
-      ) {
-        columnList = _.map(
-          queryResponse.resultTable.dataSchema.columnNames,
-          (columnName) => {
-            return columnName;
-          }
-        );
+      } else if ( queryResponse.resultTable?.dataSchema?.columnNames?.length) {
+        columnList = queryResponse.resultTable.dataSchema.columnNames;
         dataArray = queryResponse.resultTable.rows;
       }
 
@@ -229,25 +207,16 @@ const QueryPage = () => {
         }),
       });
     });
-
-    getSqlResult(tableName).then((results) => {
-      const res = results.data;
-      setResultData({
-        columns: res.resultTable.dataSchema.columnNames,
-        records: res.resultTable.rows.map((row) => {
-          return row;
-        }),
-      });
-    });
   
-    setInputQuery(`select * from ${tableName} limit 10`);
+    const query = `select * from ${tableName} limit 10`;
+    setInputQuery(query);
     setSelectedTable(tableName);
-    handleRunNow();
+    handleRunNow(query);
   };
 
   const downloadData = (exportType) => {
     const data = Utils.tableFormat(resultData);
-    const fileName = 'download';
+    const fileName = 'Pinot Data Explorer';
 
     exportFromJSON({ data, fileName, exportType });
   };
@@ -273,12 +242,12 @@ const QueryPage = () => {
           title="Tables"
           data={tableList}
           isPagination={false}
-          getCellValue={fetchSQLData}
+          cellClickCallback={fetchSQLData}
           isCellClickable
         />
 
         {tableSchema.records.length ? (
-          <CustomizedTables title="" data={tableSchema} isPagination={false} />
+          <CustomizedTables title="Schema" data={tableSchema} isPagination={false} />
         ) : null}
       </Grid>
       <Grid item xs={9} className={classes.rightPanel}>
@@ -290,7 +259,7 @@ const QueryPage = () => {
         />
 
         <Grid container className={classes.checkBox}>
-          <Grid item xs={1}>
+          <Grid item xs={2}>
             <Checkbox
               name="tracing"
               color="primary"
@@ -310,7 +279,7 @@ const QueryPage = () => {
             Query Syntax: PQL
           </Grid>
 
-          <Grid item xs={2} className={classes.runNowBtn}>
+          <Grid item xs={3} className={classes.runNowBtn}>
             <Button
               variant="contained"
               color="primary"

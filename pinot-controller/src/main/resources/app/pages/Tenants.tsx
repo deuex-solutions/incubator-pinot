@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import React, {useState, useEffect, ReactComponentElement} from 'react';
+import React, { useState, useEffect } from 'react';
 import { TableData } from 'Models';
 import { RouteComponentProps } from 'react-router-dom';
 import CustomizedTables from '../components/Table';
@@ -28,7 +28,7 @@ type Props = {
   name: string
 };
 
-const TenantPage = ({match}: RouteComponentProps<Props>) => {
+const TenantPage = ({ match }: RouteComponentProps<Props>) => {
 
   const [fetching, setFetching] = useState(true);
   const [tableData, setTableData] = useState<TableData>({
@@ -37,7 +37,7 @@ const TenantPage = ({match}: RouteComponentProps<Props>) => {
   }); 
 
   useEffect(() => {
-    getTenantTable(match.params.name).then(({data}) => {
+    getTenantTable(match.params.name).then(({ data }) => {
       const tableArr = data.tables.map(table => table);
       if(tableArr.length){
         const promiseArr = tableArr.map(name => getTableSize(name));
@@ -51,15 +51,15 @@ const TenantPage = ({match}: RouteComponentProps<Props>) => {
                 ...results.map(( result ) => {
                   let actualValue; let idealValue;
                   const tableSizeObj = result.data;
-                  response.map((res) => {
+                  response.forEach((res) => {
                     const idealStateObj = res.data;
                     if(tableSizeObj.realtimeSegments !== null && idealStateObj.REALTIME !== null){
-                      const {segments} = tableSizeObj.realtimeSegments;
+                      const { segments } = tableSizeObj.realtimeSegments;
                       actualValue = Object.keys(segments).length;
                       idealValue = Object.keys(idealStateObj.REALTIME).length;
                     }else
                     if(tableSizeObj.offlineSegments !== null && idealStateObj.OFFLINE !== null){
-                      const {segments} = tableSizeObj.offlineSegments;
+                      const { segments } = tableSizeObj.offlineSegments;
                       actualValue = Object.keys(segments).length;
                       idealValue = Object.keys(idealStateObj.OFFLINE).length;
                     }

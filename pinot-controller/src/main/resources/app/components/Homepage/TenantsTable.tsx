@@ -26,10 +26,10 @@ import CustomizedTables from '../Table';
 
 const TenantsTable = () => {
   const [fetching, setFetching] = useState(true);
-  const [tableData, setTableData] = useState<TableData>({records: [], columns: []});
+  const [tableData, setTableData] = useState<TableData>({ records: [], columns: [] });
 
   useEffect(() => {
-    getTenants().then(({data}) => {
+    getTenants().then(({ data }) => {
       const records = union(
         data.SERVER_TENANTS,
         data.BROKER_TENANTS

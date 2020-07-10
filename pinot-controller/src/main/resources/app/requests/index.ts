@@ -51,8 +51,5 @@ export const getQueryTables = (): Promise<AxiosResponse<QueryTables>> =>
 export const getTableSchema = (name: string): Promise<AxiosResponse<TableSchema>> =>
   baseApi.get(`/tables/${name}/schema`);
 
-export const getSqlResult = (name: string): Promise<AxiosResponse<SQLResult>> =>
-  baseApi.get(`/${name}/sql`);
-
 export const getQueryResult = (params: Object, url: string): Promise<AxiosResponse<SQLResult>> =>
-  baseApi.post(`/${url}`);
+  baseApi.post(`/${url}`, params, { headers: { 'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'text/plain, */*; q=0.01' } });

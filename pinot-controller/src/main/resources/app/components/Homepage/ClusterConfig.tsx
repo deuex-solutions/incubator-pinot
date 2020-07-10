@@ -18,7 +18,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { ClusterConfig, TableData } from 'Models';
+import { TableData } from 'Models';
 import { getClusterConfig } from '../../requests';
 import AppLoader from '../AppLoader';
 import CustomizedTables from '../Table';
@@ -32,7 +32,7 @@ const ClusterConfig = () => {
   });
 
   useEffect(() => {
-    getClusterConfig().then(({data}) => {
+    getClusterConfig().then(({ data }) => {
       setTableData({
         columns: ['Property', 'Value'],
         records: [

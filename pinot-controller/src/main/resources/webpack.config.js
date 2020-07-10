@@ -42,6 +42,9 @@ module.exports = (env, argv) => {
       compress: true,
       hot: true,
       open: true,
+      proxy: {
+        '/': 'http://localhost:9000'
+      }
     },
     module: {
       rules: [

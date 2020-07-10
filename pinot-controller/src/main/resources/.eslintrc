@@ -31,7 +31,7 @@
     "max-len": [
       "warn",
       {
-        "code": 80,
+        "code": 120,
         "ignoreStrings": true,
         "ignoreTemplateLiterals": true,
         "ignoreComments": true
@@ -43,12 +43,9 @@
         "allowForLoopAfterthoughts": true
       }
     ],
-    "func-names": [0],
-    "no-param-reassign": [0],
-    // TODO: Remove this when got actual data
-    "react/no-array-index-key": [
-      "warn"
-    ],
+    "func-names": "off",
+    "no-param-reassign": "off",
+    "react/no-array-index-key": "off",
     "react/jsx-key": "error",
     "import/no-extraneous-dependencies": [
       "error",

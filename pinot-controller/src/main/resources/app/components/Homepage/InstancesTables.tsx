@@ -32,7 +32,7 @@ const Instances = () => {
   const [instances, setInstances] = useState<DataTable>();
   
   useEffect(() => {
-    getInstances().then(({data}) => {
+    getInstances().then(({ data }) => {
       const initialVal: DataTable = {};
       // It will create instances list array like
       // {Controller: ['Controller1', 'Controller2'], Broker: ['Broker1', 'Broker2']} 
