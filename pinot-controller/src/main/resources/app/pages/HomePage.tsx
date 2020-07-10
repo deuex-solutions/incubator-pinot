@@ -18,17 +18,18 @@
  */
 
 import * as React from 'react';
+import { Grid } from '@material-ui/core';
 import TenantsTable from '../components/Homepage/TenantsTable';
 import Instances from '../components/Homepage/InstancesTables';
 import ClusterConfig from '../components/Homepage/ClusterConfig';
 
 const HomePage = () => {
   return (
-    <>
+    <Grid item xs style={{ padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
       <TenantsTable />
       <Instances />
       <ClusterConfig />
-    </>
+    </Grid>
   );
 };
 

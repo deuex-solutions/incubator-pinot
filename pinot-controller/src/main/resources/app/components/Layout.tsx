@@ -25,8 +25,7 @@ import Header from './Header';
 const navigationItems = [
   { id: 1, name: 'Cluster Manager', link: '/' },
   { id: 2, name: 'Query Console', link: '/query', },
-  { id: 3, name: 'Zookeeper Browser', link: '/' },
-  { id: 4, name: 'Swagger REST API', link: 'help', target: '_blank' },
+  { id: 3, name: 'Swagger REST API', link: 'help', target: '_blank' },
 ];
 
 const Layout = (props) => {
@@ -44,11 +43,14 @@ const Layout = (props) => {
       <Grid item xs={12}>
         <Grid container>
           <Grid item>
-            <Sidebar list={navigationItems} showMemu={false} selectedId={selectedId} highlightSidebarLink={highlightSidebarLink} />
+            <Sidebar
+              list={navigationItems}
+              showMemu={false}
+              selectedId={selectedId}
+              highlightSidebarLink={highlightSidebarLink}
+            />
           </Grid>
-          <Grid item xs style={{ padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
-            {props.children}
-          </Grid>
+          {props.children}
         </Grid>
       </Grid>
     </Grid>

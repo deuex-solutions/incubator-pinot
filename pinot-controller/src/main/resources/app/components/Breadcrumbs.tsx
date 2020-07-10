@@ -59,13 +59,13 @@ function BreadcrumbsComponent() {
   return (
     <Box marginY="auto" padding="0.25rem 1.5rem" display="flex">
       <Breadcrumbs
-        separator={<NavigateNextIcon fontSize="small" />}
+        separator={<NavigateNextIcon fontSize="small" style={{ fill: '#fff' }} />}
         aria-label="breadcrumb"
       >
         {pathNames.length ? (
           <LinkRouter
             underline="none"
-            variant="subtitle1"
+            variant="subtitle2"
             to='/'
             key='/'
             className={classes.root}

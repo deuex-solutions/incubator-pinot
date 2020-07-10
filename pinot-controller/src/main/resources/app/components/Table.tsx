@@ -17,6 +17,7 @@
  * under the License.
  */
 
+/* eslint-disable no-nested-ternary */
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -31,7 +32,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import { TablePagination, Typography, Toolbar } from '@material-ui/core';
+import { TablePagination } from '@material-ui/core';
 import { TableData } from 'Models';
 import IconButton from '@material-ui/core/IconButton';
 import FirstPageIcon from '@material-ui/icons/FirstPage';
@@ -43,8 +44,8 @@ import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import { NavLink } from 'react-router-dom';
 import Chip from '@material-ui/core/Chip';
 import _ from 'lodash';
-import SearchBar from './SearchBar';
 import Utils from '../utils/Utils';
+import EnhancedTableToolbar from './EnhancedTableToolbar';
 
 type Props = {
   title?: string;
@@ -52,8 +53,10 @@ type Props = {
   noOfRows?: number;
   addLinks?: boolean;
   isPagination?: boolean;
-  cellClickCallback?: Function;
-  isCellClickable?: boolean;
+  cellClickCallback?: Function,
+  isCellClickable?: boolean,
+  highlightBackground?: boolean,
+  isSticky?: boolean
 };
 
 const StyledTableRow = withStyles((theme) =>
@@ -66,26 +69,62 @@ const StyledTableRow = withStyles((theme) =>
   })
 )(TableRow);
 
+const StyledTableCell = withStyles((theme) =>
+  createStyles({
+    root: {
+      padding: '10px 15px',
+    }
+  })
+)(TableCell);
+
+const StyledChip = withStyles((theme) =>
+  createStyles({
+    root: {
+      height: '28px',
+      '& span': {
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        fontWeight: '600'
+      }
+    }
+  })
+)(Chip);
+
 const useStyles = makeStyles((theme) => ({
   root: {
     border: '1px #BDCCD9 solid',
     borderRadius: 4,
     marginBottom: '20px',
   },
+  highlightBackground: {
+    border: '1px #4285f4 solid',
+    backgroundColor: 'rgba(66, 133, 244, 0.05)',
+    borderRadius: 4,
+    marginBottom: '20px',
+  },
   table: {
-    padding: '.75rem',
     borderTop: '1px solid #BDCCD9',
+    // 'td':{
+    //   'tr:first-child':{
+    //     wordBreak: 'break-all'
+    //   }
+    // }
   },
   isCellClickable: {
     color: theme.palette.primary.main,
     cursor: 'pointer',
-    textDecoration: 'underline'
+    textDecoration: 'underline',
+    borderTop: '1px #BDCCD9 solid'
+  },
+  isSticky: {
+    whiteSpace: 'nowrap'
   },
   head: {
     fontWeight: 600,
     borderBottom: '2px solid #BDCCD9',
     lineHeight: '1rem',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    whiteSpace: 'nowrap'
   },
   body: {
     fontSize: 14,
@@ -111,51 +150,12 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const useToolbarStyles = makeStyles((theme) => ({
-  root: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(1),
-    minHeight: 48,
-  },
-  title: {
-    flex: '1 1 100%',
-    fontWeight: 600,
-    letterSpacing: '2px',
-  },
-}));
-
 const usePaginationStyles = makeStyles({
   root: {
     flexShrink: 0,
     marginLeft: 'auto',
   },
 });
-
-const EnhancedTableToolbar = (props: {
-  name: string;
-  searchValue: string;
-  handleSearch: (val: string) => void;
-}) => {
-  const classes = useToolbarStyles();
-  const { name, searchValue, handleSearch } = props;
-
-  return (
-    <Toolbar className={classes.root}>
-      <Typography
-        className={classes.title}
-        variant="h6"
-        id="tableTitle"
-        component="div"
-      >
-        {name.toUpperCase()}
-      </Typography>
-      <SearchBar
-        value={searchValue}
-        onChange={(e) => handleSearch(e.target.value)}
-      />
-    </Toolbar>
-  );
-};
 
 function TablePaginationActions(props) {
   const classes = usePaginationStyles();
@@ -235,11 +235,13 @@ export default function CustomizedTables({
   isPagination,
   cellClickCallback,
   isCellClickable,
+  highlightBackground,
+  isSticky
 }: Props) {
   const [finalData, setFinalData] = React.useState(Utils.tableFormat(data));
 
   const [order, setOrder] = React.useState(false);
-  const [columnClicked, setColumnClicked] = React.useState(data.columns[0]);
+  const [columnClicked, setColumnClicked] = React.useState('');
 
   const classes = useStyles();
   const [rowsPerPage, setRowsPerPage] = React.useState(noOfRows || 10);
@@ -291,7 +293,7 @@ export default function CustomizedTables({
   const styleCell = (str: string | number | boolean) => {
     if (str === 'Good') {
       return (
-        <Chip
+        <StyledChip
           label={str}
           className={classes.cellSatusGood}
           variant="outlined"
@@ -300,7 +302,7 @@ export default function CustomizedTables({
     }
     if (str === 'Bad') {
       return (
-        <Chip
+        <StyledChip
           label={str}
           className={classes.cellStatusBad}
           variant="outlined"
@@ -311,20 +313,21 @@ export default function CustomizedTables({
   };
 
   return (
-    <div className={classes.root}>
-      <TableContainer>
-        {title ? (
-          <EnhancedTableToolbar
-            name={title}
-            searchValue={search}
-            handleSearch={(val: string) => setSearch(val)}
-          />
-        ) : null}
-        <Table className={classes.table} size="small" stickyHeader aria-label="sticky table">
+    <div className={highlightBackground ? classes.highlightBackground : classes.root}>
+      {title ? (
+        <EnhancedTableToolbar
+          name={title}
+          showSearchBox={true}
+          searchValue={search}
+          handleSearch={(val: string) => setSearch(val)}
+        />
+      ) : null}
+      <TableContainer style={{ maxHeight: isSticky ? 400 : 600 }}>
+        <Table className={classes.table} size="small" stickyHeader={isSticky}>
           <TableHead>
             <TableRow>
               {data.columns.map((column, index) => (
-                <TableCell
+                <StyledTableCell
                   className={classes.head}
                   key={index}
                   onClick={() => {
@@ -333,31 +336,31 @@ export default function CustomizedTables({
                     setColumnClicked(column);
                   }}
                 >
-                  <span style={{ display: 'flex' }}>
-                    {column}
-                    {column === columnClicked ? order ? (
-                      <ArrowDropDownIcon
-                        color="primary"
-                      />
-                    ) : (
-                      <ArrowDropUpIcon
-                        color="primary"
-                      />
-                    ) : null}
-                  </span>
-                </TableCell>
+                  {column}
+                  {column === columnClicked ? order ? (
+                    <ArrowDropDownIcon
+                      color="primary"
+                      style={{ verticalAlign: 'middle' }}
+                    />
+                  ) : (
+                    <ArrowDropUpIcon
+                      color="primary"
+                      style={{ verticalAlign: 'middle' }}
+                    />
+                  ) : null}
+                </StyledTableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody className={classes.body}>
             {finalData.length === 0 ? (
               <TableRow>
-                <TableCell
+                <StyledTableCell
                   className={classes.nodata}
                   colSpan={data.columns.length}
                 >
                   No Record(s) found
-                </TableCell>
+                </StyledTableCell>
               </TableRow>
             ) : (
               finalData
@@ -366,18 +369,22 @@ export default function CustomizedTables({
                   <StyledTableRow key={index} hover>
                     {Object.values(row).map((cell, idx) =>
                       addLinks && !idx ? (
-                        <TableCell key={idx}>
+                        <StyledTableCell key={idx}>
                           <NavLink
                             className={classes.link}
-                            to={`/tenants/${cell}/tables`}
+                            to={`/tenants/${cell}`}
                           >
                             {cell}
                           </NavLink>
-                        </TableCell>
+                        </StyledTableCell>
                       ) : (
-                        <TableCell key={idx} className={isCellClickable ? classes.isCellClickable : ''} onClick={() => {cellClickCallback && cellClickCallback(cell);}}>
+                        <StyledTableCell
+                          key={idx}
+                          className={isCellClickable ? classes.isCellClickable : (isSticky ? classes.isSticky : '')}
+                          onClick={() => {cellClickCallback && cellClickCallback(cell);}}
+                        >
                           {styleCell(cell.toString())}
-                        </TableCell>
+                        </StyledTableCell>
                       )
                     )}
                   </StyledTableRow>

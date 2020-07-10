@@ -27,19 +27,15 @@ import theme from './theme';
 import Layout from './components/Layout';
 import TenantsPage from './pages/Tenants';
 import QueryPage from './pages/Query';
- 
+
 const App = () => (
   <MuiThemeProvider theme={theme}>
     <Router>
       <Layout>
         <Switch>
-          <Route exact path="/">
-            <HomePage />
-          </Route>
-          <Route exact path="/tenants/:name/tables" component={TenantsPage} />
-          <Route exact path="/query">
-            <QueryPage />
-          </Route>
+          <Route exact path="/" component={HomePage} />
+          <Route exact path="/tenants/:name" component={TenantsPage} />
+          <Route exact path="/query" component={QueryPage} />
         </Switch>
       </Layout>
     </Router>

@@ -18,6 +18,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Grid } from '@material-ui/core';
 import { TableData } from 'Models';
 import { RouteComponentProps } from 'react-router-dom';
 import CustomizedTables from '../components/Table';
@@ -82,7 +83,10 @@ const TenantPage = ({ match }: RouteComponentProps<Props>) => {
     });
   }, []);
   return (
-    fetching ? <AppLoader /> : <CustomizedTables title={match.params.name} data={tableData} isPagination />
+    fetching ? <AppLoader /> :
+    <Grid item xs style={{ padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
+      <CustomizedTables title={match.params.name} data={tableData} isPagination />
+    </Grid>
   );
 };
 

@@ -24,26 +24,23 @@ import Alert from '@material-ui/lab/Alert';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { TableData, SQLResult } from 'Models';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
-import '../../node_modules/codemirror/lib/codemirror.css';
-import '../../node_modules/codemirror/theme/material.css';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/material.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/sql/sql';
 import _ from 'lodash';
 import exportFromJSON from 'export-from-json';
 import Utils from '../utils/Utils';
 import { getQueryTables, getTableSchema, getQueryResult } from '../requests';
 import AppLoader from '../components/AppLoader';
 import CustomizedTables from '../components/Table';
+import QuerySideBar from '../components/Query/QuerySideBar';
+import EnhancedTableToolbar from '../components/EnhancedTableToolbar';
 
 const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
     paddingLeft: '20px',
-  },
-  leftPanel: {
-    width: 250,
-    height: 'calc(100vh)',
-    borderRight: '1px solid #D8E1E8',
-    paddingRight: 20,
-    paddingTop: 20,
   },
   rightPanel: {
     padding: '20px',
@@ -69,6 +66,11 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: 'auto',
     paddingLeft: '74px',
   },
+  sqlDiv: {
+    border: '1px #BDCCD9 solid',
+    borderRadius: 4,
+    marginBottom: '20px',
+  }
 }));
 
 const jsonoptions = {
@@ -77,6 +79,16 @@ const jsonoptions = {
   styleActiveLine: true,
   gutters: ['CodeMirror-lint-markers'],
   lint: true,
+  theme: 'default'
+};
+
+const sqloptions = {
+  lineNumbers: true,
+  mode: 'sql',
+  styleActiveLine: true,
+  gutters: ['CodeMirror-lint-markers'],
+  lint: true,
+  theme: 'default'
 };
 
 const QueryPage = () => {
@@ -267,122 +279,120 @@ const QueryPage = () => {
   return fetching ? (
     <AppLoader />
   ) : (
-    <Grid container>
-      <Grid item xs className={classes.leftPanel}>
-        <CustomizedTables
-          title="Tables"
-          data={tableList}
-          isPagination={false}
-          cellClickCallback={fetchSQLData}
-          isCellClickable
+    <>
+      <Grid item>
+        <QuerySideBar
+          tableList={tableList}
+          fetchSQLData={fetchSQLData}
+          tableSchema={tableSchema}
         />
-
-        {tableSchema.records.length ? (
-          <CustomizedTables
-            title="Schema"
-            data={tableSchema}
-            isPagination={false}
-          />
-        ) : null}
       </Grid>
-      <Grid item xs={9} className={classes.rightPanel}>
-        <CodeMirror
-          options={jsonoptions}
-          value={inputQuery}
-          onChange={handleOutputDataChange}
-          className={classes.codeMirror}
-        />
-
-        <Grid container className={classes.checkBox}>
-          <Grid item xs={2}>
-            <Checkbox
-              name="tracing"
-              color="primary"
-              onChange={handleChange}
-              checked={checked.tracing}
-            />
-            Tracing
-          </Grid>
-
-          <Grid item xs={2}>
-            <Checkbox
-              name="querySyntaxPQL"
-              color="primary"
-              onChange={handleChange}
-              checked={checked.querySyntaxPQL}
-            />
-            Query Syntax: PQL
-          </Grid>
-
-          <Grid item xs={3} className={classes.runNowBtn}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleRunNow()}
-            >
-              Run Query
-            </Button>
-          </Grid>
-        </Grid>
-
-        <Grid item xs style={{ backgroundColor: 'white' }}>
-          {resultData.records.length ? (
-            <>
-              <Grid container className={classes.actionBtns}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  className={classes.btn}
-                  onClick={() => downloadData('xls')}
-                >
-                  Excel
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  className={classes.btn}
-                  onClick={() => downloadData('csv')}
-                >
-                  CSV
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  className={classes.btn}
-                  onClick={() => copyToClipboard()}
-                >
-                  Copy
-                </Button>
-                {copyMsg ? (
-                  <Alert
-                    icon={<FileCopyIcon fontSize="inherit" />}
-                    severity="info"
-                  >
-                    Copied {resultData.records.length} rows to Clipboard
-                  </Alert>
-                ) : null}
-              </Grid>
-              <CustomizedTables
-                title={selectedTable}
-                data={resultData}
-                isPagination
+      <Grid item xs style={{ padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
+        <Grid container>
+          <Grid item xs={12} className={classes.rightPanel}>
+            <div className={classes.sqlDiv}>
+              <EnhancedTableToolbar name="SQL Editor" showSearchBox={false} />
+              <CodeMirror
+                options={sqloptions}
+                value={inputQuery}
+                onChange={handleOutputDataChange}
+                className={classes.codeMirror}
               />
-            </>
-          ) : null}
-        </Grid>
+            </div>
 
-        {resultData.records.length ? (
-          <CodeMirror
-            options={jsonoptions}
-            value={outputResult}
-            className={classes.queryOutput}
-          />
-        ) : null}
+            <Grid container className={classes.checkBox}>
+              <Grid item xs={2}>
+                <Checkbox
+                  name="tracing"
+                  color="primary"
+                  onChange={handleChange}
+                  checked={checked.tracing}
+                />
+                Tracing
+              </Grid>
+
+              <Grid item xs={2}>
+                <Checkbox
+                  name="querySyntaxPQL"
+                  color="primary"
+                  onChange={handleChange}
+                  checked={checked.querySyntaxPQL}
+                />
+                Query Syntax: PQL
+              </Grid>
+
+              <Grid item xs={3} className={classes.runNowBtn}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleRunNow()}
+                >
+                  Run Query
+                </Button>
+              </Grid>
+            </Grid>
+
+            <Grid item xs style={{ backgroundColor: 'white' }}>
+              {resultData.records.length ? (
+                <>
+                  <Grid container className={classes.actionBtns}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      className={classes.btn}
+                      onClick={() => downloadData('xls')}
+                    >
+                      Excel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      className={classes.btn}
+                      onClick={() => downloadData('csv')}
+                    >
+                      CSV
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      className={classes.btn}
+                      onClick={() => copyToClipboard()}
+                    >
+                      Copy
+                    </Button>
+                    {copyMsg ? (
+                      <Alert
+                        icon={<FileCopyIcon fontSize="inherit" />}
+                        severity="info"
+                      >
+                        Copied {resultData.records.length} rows to Clipboard
+                      </Alert>
+                    ) : null}
+                  </Grid>
+                  <CustomizedTables
+                    title={selectedTable}
+                    data={resultData}
+                    isPagination
+                    isSticky={true}
+                  />
+                </>
+              ) : null}
+            </Grid>
+
+            {resultData.records.length ? (
+              <CodeMirror
+                options={jsonoptions}
+                value={outputResult}
+                className={classes.queryOutput}
+              />
+            ) : null}
+          </Grid>
+        </Grid>
       </Grid>
-    </Grid>
+    </>
   );
 };
 
