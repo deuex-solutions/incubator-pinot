@@ -45,7 +45,12 @@ const ClusterConfig = () => {
 
   return (
     fetching ? <AppLoader /> :
-    <CustomizedTables title="Cluster configuration" data={tableData} />
+    <CustomizedTables
+      title="Cluster configuration"
+      data={tableData}
+      showSearchBox={true}
+      inAccordionFormat={true}
+    />
   );
 };
 

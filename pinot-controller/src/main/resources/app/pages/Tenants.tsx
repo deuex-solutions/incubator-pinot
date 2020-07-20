@@ -23,7 +23,8 @@ import { TableData } from 'Models';
 import { RouteComponentProps } from 'react-router-dom';
 import CustomizedTables from '../components/Table';
 import AppLoader from '../components/AppLoader';
-import { getTenantTable, getTableSize, getIdealState } from '../requests';
+import { getTenantTable, getTableSize, getIdealState, getExternalView } from '../requests';
+import Utils from '../utils/Utils';
 
 type Props = {
   tenantName: string
@@ -32,9 +33,10 @@ type Props = {
 const TenantPage = ({ match }: RouteComponentProps<Props>) => {
 
   const tenantName = match.params.tenantName;
+  const columnHeaders = ['Table Name', 'Reported Size', 'Estimated Size', 'Number of Segments', 'Status'];
   const [fetching, setFetching] = useState(true);
   const [tableData, setTableData] = useState<TableData>({
-    columns: [],
+    columns: columnHeaders,
     records: []
   });
 
@@ -42,43 +44,53 @@ const TenantPage = ({ match }: RouteComponentProps<Props>) => {
     getTenantTable(tenantName).then(({ data }) => {
       const tableArr = data.tables.map(table => table);
       if(tableArr.length){
-        const promiseArr = tableArr.map(name => getTableSize(name));
-        const promiseArr2 = tableArr.map(name => getIdealState(name));
+        const promiseArr = [];
+        tableArr.map((name) => {
+          promiseArr.push(getTableSize(name));
+          promiseArr.push(getIdealState(name));
+          promiseArr.push(getExternalView(name));
+        });
 
         Promise.all(promiseArr).then(results => {
-          Promise.all(promiseArr2).then(response => {
-            setTableData({
-              columns: ['Table Name', 'Reported Size', 'Estimated Size', 'Number of Segments', 'Status'],
-              records: [
-                ...results.map(( result ) => {
-                  let actualValue; let idealValue;
-                  const tableSizeObj = result.data;
-                  response.forEach((res) => {
-                    const idealStateObj = res.data;
-                    if(tableSizeObj.realtimeSegments !== null && idealStateObj.REALTIME !== null){
-                      const { segments } = tableSizeObj.realtimeSegments;
-                      actualValue = Object.keys(segments).length;
-                      idealValue = Object.keys(idealStateObj.REALTIME).length;
-                    }else
-                    if(tableSizeObj.offlineSegments !== null && idealStateObj.OFFLINE !== null){
-                      const { segments } = tableSizeObj.offlineSegments;
-                      actualValue = Object.keys(segments).length;
-                      idealValue = Object.keys(idealStateObj.OFFLINE).length;
-                    }
-                  });
-                  return [tableSizeObj.tableName, tableSizeObj.reportedSizeInBytes, tableSizeObj.estimatedSizeInBytes,
-                    `${actualValue} / ${idealValue}`, actualValue === idealValue ? 'Good' : 'Bad'];
-                })
-              ]
-            });
-            setFetching(false);
+          const tableLength = tableArr.length;
+          let finalRecordsArr = [];
+          let singleTableData = [];
+          let idealStateObj = null;
+          let externalViewObj = null;
+          results.map((result, index)=>{
+            // since we have 3 promises, we are using mod 3 below
+            if(index % 3 === 0){
+              // response of getTableSize API
+              const {tableName, reportedSizeInBytes, estimatedSizeInBytes} = result.data;
+              singleTableData.push(tableName, reportedSizeInBytes, estimatedSizeInBytes);
+            } else if (index % 3 === 1){
+              // response of getIdealState API
+              idealStateObj = result.data.OFFLINE || result.data.REALTIME;
+            } else if (index % 3 === 2){
+              // response of getExternalView API
+              externalViewObj = result.data.OFFLINE || result.data.REALTIME;
+              const externalSegmentCount = Object.keys(externalViewObj).length;
+              const idealSegmentCount = Object.keys(idealStateObj).length;
+              // Generating data for the record
+              singleTableData.push(
+                `${externalSegmentCount} / ${idealSegmentCount}`,
+                Utils.getSegmentStatus(idealStateObj, externalViewObj)
+              );
+              // saving into records array
+              finalRecordsArr.push(singleTableData);
+              // resetting the required variables
+              singleTableData = [];
+              idealStateObj = null;
+              externalViewObj = null;
+            }
           });
-        });
-      }else {
-        setTableData({
-          columns: ['Table Name', 'Reported Size', 'Estimated Size', 'Number of Segments', 'Status'],
-          records: []
-        });
+          setTableData({
+            columns: columnHeaders,
+            records: finalRecordsArr
+          });
+          setFetching(false);
+        })
+      } else {
         setFetching(false);
       }
     });
@@ -86,7 +98,14 @@ const TenantPage = ({ match }: RouteComponentProps<Props>) => {
   return (
     fetching ? <AppLoader /> :
     <Grid item xs style={{ padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
-      <CustomizedTables title={tenantName} data={tableData} isPagination addLinks baseURL={`/tenants/${tenantName}/table/`} />
+      <CustomizedTables
+        title={tenantName}
+        data={tableData}
+        isPagination addLinks
+        baseURL={`/tenants/${tenantName}/table/`}
+        showSearchBox={true}
+        inAccordionFormat={true}
+      />
     </Grid>
   );
 };

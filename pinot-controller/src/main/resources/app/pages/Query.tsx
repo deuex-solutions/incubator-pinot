@@ -35,7 +35,8 @@ import { getQueryTables, getTableSchema, getQueryResult } from '../requests';
 import AppLoader from '../components/AppLoader';
 import CustomizedTables from '../components/Table';
 import QuerySideBar from '../components/Query/QuerySideBar';
-import EnhancedTableToolbar from '../components/EnhancedTableToolbar';
+import TableToolbar from '../components/TableToolbar';
+import SimpleAccordion from '../components/SimpleAccordion';
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -289,13 +290,14 @@ const QueryPage = () => {
           tableList={tableList}
           fetchSQLData={fetchSQLData}
           tableSchema={tableSchema}
+          selectedTable={selectedTable}
         />
       </Grid>
       <Grid item xs style={{ padding: 20, backgroundColor: 'white', maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
         <Grid container>
           <Grid item xs={12} className={classes.rightPanel}>
             <div className={classes.sqlDiv}>
-              <EnhancedTableToolbar name="SQL Editor" showSearchBox={false} />
+              <TableToolbar name="SQL Editor" showSearchBox={false} />
               <CodeMirror
                 options={sqloptions}
                 value={inputQuery}
@@ -378,22 +380,29 @@ const QueryPage = () => {
                     ) : null}
                   </Grid>
                   <CustomizedTables
-                    title={selectedTable}
+                    title="Query Result"
                     data={resultData}
                     isPagination
                     isSticky={true}
+                    showSearchBox={true}
+                    inAccordionFormat={true}
                   />
                 </>
               ) : null}
             </Grid>
 
             {resultData.records.length ? (
-              <CodeMirror
-                options={jsonoptions}
-                value={outputResult}
-                className={classes.queryOutput}
-                autoCursor={false}
-              />
+              <SimpleAccordion
+                headerTitle="Query Result (JSON Format)"
+                showSearchBox={false}
+              >
+                <CodeMirror
+                  options={jsonoptions}
+                  value={outputResult}
+                  className={classes.queryOutput}
+                  autoCursor={false}
+                />
+              </SimpleAccordion>
             ) : null}
           </Grid>
         </Grid>

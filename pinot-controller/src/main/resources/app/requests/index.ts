@@ -33,11 +33,17 @@ export const getTenantTable = (name: string): Promise<AxiosResponse<TableName>> 
 export const getTenantTableDetails = (tableName: string): Promise<AxiosResponse<IdealState>> =>
   baseApi.get(`/tables/${tableName}`);
 
+export const getSegmentMetadata = (tableName: string, segmentName: string): Promise<AxiosResponse<IdealState>> =>
+  baseApi.get(`/segments/${tableName}/${segmentName}/metadata`);
+
 export const getTableSize = (name: string): Promise<AxiosResponse<TableSize>> =>
   baseApi.get(`/tables/${name}/size`);
 
 export const getIdealState = (name: string): Promise<AxiosResponse<IdealState>> =>
   baseApi.get(`/tables/${name}/idealstate`);
+
+export const getExternalView = (name: string): Promise<AxiosResponse<IdealState>> =>
+  baseApi.get(`/tables/${name}/externalview`);
 
 export const getInstances = (): Promise<AxiosResponse<Instances>> =>
   baseApi.get('/instances');

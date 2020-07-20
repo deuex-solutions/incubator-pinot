@@ -57,7 +57,12 @@ const InstaceTable = ({ name, instances }: Props) => {
 
   return (
     fetching ? <AppLoader /> :
-    <CustomizedTables title={name} data={tableData} />
+    <CustomizedTables
+      title={name}
+      data={tableData}
+      showSearchBox={true}
+      inAccordionFormat={true}
+    />
   );
 };
 
