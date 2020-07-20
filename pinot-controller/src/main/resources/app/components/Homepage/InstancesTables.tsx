@@ -21,7 +21,8 @@ import React, { useEffect, useState } from 'react';
 import map from 'lodash/map';
 import { getInstances } from '../../requests';
 import AppLoader from '../AppLoader';
-import InstaceTable from './InstanceTable';
+import InstanceTable from './InstanceTable';
+import { Grid } from '@material-ui/core';
 
 type DataTable = {
   [name: string]: string[]
@@ -54,7 +55,7 @@ const Instances = () => {
     <>
       {
         map(instances, (value, key) => {
-          return <InstaceTable key={key} name={key} instances={value} />;
+          return <InstanceTable key={key} name={key} instances={value} />;
         })
       }
     </>

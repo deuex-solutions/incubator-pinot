@@ -35,7 +35,7 @@ const TenantsTable = () => {
         data.BROKER_TENANTS
       );
       setTableData({
-        columns: ['Name', 'Server', 'Broker', 'Tables'],
+        columns: ['Tenant Name', 'Server', 'Broker', 'Tables'],
         records: [
           ...records.map(record => [
             record,
@@ -50,7 +50,17 @@ const TenantsTable = () => {
   }, []);
 
   return (
-    fetching ? <AppLoader /> : <CustomizedTables title="Tenants" data={tableData} addLinks isPagination baseURL="/tenants/" />
+    fetching ?
+      <AppLoader />
+    :
+      <CustomizedTables
+        title="Tenants"
+        data={tableData}
+        addLinks isPagination
+        baseURL="/tenants/"
+        showSearchBox={true}
+        inAccordionFormat={true}
+      />
   );
 };
 

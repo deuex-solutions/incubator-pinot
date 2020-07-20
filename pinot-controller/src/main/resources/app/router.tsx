@@ -21,10 +21,12 @@ import HomePage from './pages/HomePage';
 import TenantsPage from './pages/Tenants';
 import TenantPageDetails from './pages/TenantDetails';
 import QueryPage from './pages/Query';
+import SegmentDetails from './pages/SegmentDetails';
 
 export default [
   { path: "/cluster", Component: HomePage },
   { path: "/tenants/:tenantName", Component: TenantsPage },
   { path: "/tenants/:tenantName/table/:tableName", Component: TenantPageDetails },
-  { path: "/", Component: QueryPage }
+  { path: "/", Component: QueryPage },
+  { path: "/tenants/:tenantName/table/:tableName/:segmentName", Component: SegmentDetails }
 ];
