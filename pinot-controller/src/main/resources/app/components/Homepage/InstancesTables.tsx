@@ -19,10 +19,9 @@
 
 import React, { useEffect, useState } from 'react';
 import map from 'lodash/map';
-import { getInstances } from '../../requests';
 import AppLoader from '../AppLoader';
 import InstanceTable from './InstanceTable';
-import { Grid } from '@material-ui/core';
+import PinotMethodUtils from '../../utils/PinotMethodUtils';
 
 type DataTable = {
   [name: string]: string[]
@@ -32,21 +31,13 @@ const Instances = () => {
   const [fetching, setFetching] = useState(true);
   const [instances, setInstances] = useState<DataTable>();
 
+  const fetchData = async () => {
+    const result = await PinotMethodUtils.getAllInstances();
+    setInstances(result);
+    setFetching(false);
+  };
   useEffect(() => {
-    getInstances().then(({ data }) => {
-      const initialVal: DataTable = {};
-      // It will create instances list array like
-      // {Controller: ['Controller1', 'Controller2'], Broker: ['Broker1', 'Broker2']}
-      const groupedData = data.instances.reduce((r, a) => {
-        const y = a.split('_');
-        const key = y[0].trim();
-        r[key] = [...r[key] || [], a];
-        return r;
-      }, initialVal);
-
-      setInstances(groupedData);
-      setFetching(false);
-    });
+    fetchData();
   }, []);
 
   return fetching ? (

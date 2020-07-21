@@ -23,8 +23,7 @@ import { TableData } from 'Models';
 import { RouteComponentProps } from 'react-router-dom';
 import CustomizedTables from '../components/Table';
 import AppLoader from '../components/AppLoader';
-import { getTenantTable, getTableSize, getIdealState, getExternalView } from '../requests';
-import Utils from '../utils/Utils';
+import PinotMethodUtils from '../utils/PinotMethodUtils';
 
 type Props = {
   tenantName: string
@@ -40,60 +39,13 @@ const TenantPage = ({ match }: RouteComponentProps<Props>) => {
     records: []
   });
 
+  const fetchData = async () => {
+    const result = await PinotMethodUtils.getTenantTableData(tenantName);
+    setTableData(result);
+    setFetching(false);
+  };
   useEffect(() => {
-    getTenantTable(tenantName).then(({ data }) => {
-      const tableArr = data.tables.map(table => table);
-      if(tableArr.length){
-        const promiseArr = [];
-        tableArr.map((name) => {
-          promiseArr.push(getTableSize(name));
-          promiseArr.push(getIdealState(name));
-          promiseArr.push(getExternalView(name));
-        });
-
-        Promise.all(promiseArr).then(results => {
-          const tableLength = tableArr.length;
-          let finalRecordsArr = [];
-          let singleTableData = [];
-          let idealStateObj = null;
-          let externalViewObj = null;
-          results.map((result, index)=>{
-            // since we have 3 promises, we are using mod 3 below
-            if(index % 3 === 0){
-              // response of getTableSize API
-              const {tableName, reportedSizeInBytes, estimatedSizeInBytes} = result.data;
-              singleTableData.push(tableName, reportedSizeInBytes, estimatedSizeInBytes);
-            } else if (index % 3 === 1){
-              // response of getIdealState API
-              idealStateObj = result.data.OFFLINE || result.data.REALTIME;
-            } else if (index % 3 === 2){
-              // response of getExternalView API
-              externalViewObj = result.data.OFFLINE || result.data.REALTIME;
-              const externalSegmentCount = Object.keys(externalViewObj).length;
-              const idealSegmentCount = Object.keys(idealStateObj).length;
-              // Generating data for the record
-              singleTableData.push(
-                `${externalSegmentCount} / ${idealSegmentCount}`,
-                Utils.getSegmentStatus(idealStateObj, externalViewObj)
-              );
-              // saving into records array
-              finalRecordsArr.push(singleTableData);
-              // resetting the required variables
-              singleTableData = [];
-              idealStateObj = null;
-              externalViewObj = null;
-            }
-          });
-          setTableData({
-            columns: columnHeaders,
-            records: finalRecordsArr
-          });
-          setFetching(false);
-        })
-      } else {
-        setFetching(false);
-      }
-    });
+    fetchData();
   }, []);
   return (
     fetching ? <AppLoader /> :
@@ -101,7 +53,8 @@ const TenantPage = ({ match }: RouteComponentProps<Props>) => {
       <CustomizedTables
         title={tenantName}
         data={tableData}
-        isPagination addLinks
+        isPagination
+        addLinks
         baseURL={`/tenants/${tenantName}/table/`}
         showSearchBox={true}
         inAccordionFormat={true}

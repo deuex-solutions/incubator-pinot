@@ -82,6 +82,7 @@ declare module 'Models' {
   type schema = {
     name: string,
     dataType: string
+    fieldType?: string
   };
 
   export type SQLResult = {
