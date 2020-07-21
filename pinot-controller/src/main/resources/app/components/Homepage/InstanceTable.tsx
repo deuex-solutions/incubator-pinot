@@ -19,9 +19,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { TableData } from 'Models';
-import { getInstance } from '../../requests';
 import CustomizedTables from '../Table';
 import AppLoader from '../AppLoader';
+import PinotMethodUtils from '../../utils/PinotMethodUtils';
 
 type Props = {
   name: string,
@@ -36,23 +36,14 @@ const InstaceTable = ({ name, instances }: Props) => {
     records: []
   });
 
+  const fetchData = async () => {
+    const result = await PinotMethodUtils.getInstanceData(instances);
+    setTableData(result);
+    setFetching(false);
+  };
+
   useEffect(() => {
-
-    const promiseArr = [
-      ...instances.map(inst => getInstance(inst))
-    ];
-
-    Promise.all(promiseArr).then(result => {
-      setTableData({
-        columns: ['Name', 'Enabled', 'Hostname', 'Port', 'URI'],
-        records: [
-          ...result.map(({ data }) => (
-            [data.instanceName, data.enabled, data.hostName, data.port, `${data.hostName}:${data.port}`]
-          ))
-        ]
-      });
-      setFetching(false);
-    });
+    fetchData();
   }, [instances]);
 
   return (

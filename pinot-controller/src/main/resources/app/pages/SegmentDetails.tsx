@@ -23,10 +23,6 @@ import { Grid } from '@material-ui/core';
 import { RouteComponentProps } from 'react-router-dom';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 import AppLoader from '../components/AppLoader';
-import {
-  getIdealState,
-  getSegmentMetadata
-} from '../requests';
 import TableToolbar from '../components/TableToolbar';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/material.css';
@@ -34,7 +30,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/sql/sql';
 import SimpleAccordion from '../components/SimpleAccordion';
 import CustomizedTables from '../components/Table';
-import moment from 'moment';
+import PinotMethodUtils from '../utils/PinotMethodUtils';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -97,29 +93,21 @@ const SegmentDetails = ({ match }: RouteComponentProps<Props>) => {
     createTime: '',
   });
 
+  const [replica, setReplica] = useState({
+    columns: [],
+    records: []
+  });
+
   const [value, setValue] = useState('');
-
+  const fetchData = async () => {
+    const result = await PinotMethodUtils.getSegmentDetails(tableName, segmentName);
+    setSegmentSummary(result.summary);
+    setReplica(result.replicaSet);
+    setValue(JSON.stringify(result.JSON, null, 2));
+    setFetching(false);
+  };
   useEffect(() => {
-    const promiseArr = [];
-    promiseArr.push(getIdealState(tableName));
-    promiseArr.push(getSegmentMetadata(tableName, segmentName));
-
-    Promise.all(promiseArr).then((results) => {
-      const obj = results[0].data.OFFLINE || results[0].data.REALTIME;
-      const segmentMetaData = results[1].data;
-      for (const prop in obj) {
-        if (prop === segmentName) {
-          setSegmentSummary({
-            segmentName,
-            totalDocs: segmentMetaData['segment.total.docs'],
-            createTime: moment(+segmentMetaData['segment.creation.time']).format('MMMM Do YYYY, h:mm:ss')
-          });
-        }
-      }
-      setValue(JSON.stringify(results[1].data, null, 2));
-
-      setFetching(false);
-    });
+    fetchData();
   }, []);
   return fetching ? (
     <AppLoader />
@@ -153,7 +141,7 @@ const SegmentDetails = ({ match }: RouteComponentProps<Props>) => {
         <Grid item xs={6}>
           <CustomizedTables
             title="Replica Set"
-            data={{columns:['Server Name', 'Status'], records: []}}
+            data={replica}
             isPagination={true}
             showSearchBox={true}
             inAccordionFormat={true}

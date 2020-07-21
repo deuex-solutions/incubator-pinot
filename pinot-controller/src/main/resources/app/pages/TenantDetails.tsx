@@ -23,14 +23,8 @@ import { Grid } from '@material-ui/core';
 import { RouteComponentProps } from 'react-router-dom';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 import { TableData } from 'Models';
+import _ from 'lodash';
 import AppLoader from '../components/AppLoader';
-import {
-  getTenantTableDetails,
-  getTableSize,
-  getIdealState,
-  getTableSchema,
-  getExternalView,
-} from '../requests';
 import CustomizedTables from '../components/Table';
 import TableToolbar from '../components/TableToolbar';
 import 'codemirror/lib/codemirror.css';
@@ -38,7 +32,7 @@ import 'codemirror/theme/material.css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/sql/sql';
 import SimpleAccordion from '../components/SimpleAccordion';
-import _ from 'lodash';
+import PinotMethodUtils from '../utils/PinotMethodUtils';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -104,76 +98,37 @@ const TenantPageDetails = ({ match }: RouteComponentProps<Props>) => {
     records: [],
   });
 
-  const [segmentCount, setSegmentCount] = useState(0);
-
   const [tableSchema, setTableSchema] = useState<TableData>({
     columns: [],
     records: [],
   });
   const [value, setValue] = useState('');
 
+  const fetchTableData = async () => {
+    const result = await PinotMethodUtils.getTableSummaryData(tableName);
+    setTableSummary(result);
+    fetchSegmentData();
+  };
+
+  const fetchSegmentData = async () => {
+    const result = await PinotMethodUtils.getSegmentList(tableName);
+    setSegmentList(result);
+    fetchTableSchema();
+  };
+
+  const fetchTableSchema = async () => {
+    const result = await PinotMethodUtils.getTableSchemaData(tableName, true);
+    setTableSchema(result);
+    fetchTableJSON();
+  };
+
+  const fetchTableJSON = async () => {
+    const result = await PinotMethodUtils.getTableDetails(tableName);
+    setValue(JSON.stringify(result, null, 2));
+    setFetching(false);
+  };
   useEffect(() => {
-    const promiseArr = [];
-    promiseArr.push(getTableSize(tableName));
-    promiseArr.push(getIdealState(tableName));
-    promiseArr.push(getExternalView(tableName));
-    promiseArr.push(getTableSchema(tableName));
-    promiseArr.push(getTenantTableDetails(tableName));
-
-    Promise.all(promiseArr).then((results) => {
-      const tableSumaryObj = results[0].data;
-      setTableSummary({
-        tableName: tableSumaryObj.tableName,
-        reportedSize: tableSumaryObj.reportedSizeInBytes,
-        estimatedSize: tableSumaryObj.estimatedSizeInBytes,
-      });
-
-      const idealStateObj = results[1].data.OFFLINE || results[1].data.REALTIME;
-      const externalViewObj = results[2].data.OFFLINE || results[2].data.REALTIME;
-
-      setSegmentList({
-        columns: ['Segment Name', 'Status'],
-        records: Object.keys(idealStateObj)
-                  .map((key)=> {
-                    return [
-                      key,
-                      _.isEqual(idealStateObj[key], externalViewObj[key]) ? 'Good' : 'Bad'
-                    ];
-                  }),
-      });
-
-      setSegmentCount(
-        Object.keys(idealStateObj).length
-      );
-
-      const tableSchemaObj = results[3].data;
-      const dimensionFields = tableSchemaObj.dimensionFieldSpecs || [];
-      const metricFields = tableSchemaObj.metricFieldSpecs || [];
-      const dateTimeField = tableSchemaObj.dateTimeFieldSpecs || [];
-
-      dimensionFields.map((field) => { field.fieldType = 'Dimension'; });
-
-      metricFields.map((field) => { field.fieldType = 'Metric'; });
-
-      dateTimeField.map((field) => { field.fieldType = 'Date-Time'; });
-
-      const columnList = [
-        ...dimensionFields,
-        ...metricFields,
-        ...dateTimeField,
-      ];
-
-      setTableSchema({
-        columns: ['Name', 'Data Type', 'Field Type'],
-        records: columnList.map((field) => {
-          return [field.name, field.dataType, field.fieldType];
-        }),
-      });
-
-      setValue(JSON.stringify(results[4].data, null, 2));
-
-      setFetching(false);
-    });
+    fetchTableData();
   }, []);
   return fetching ? (
     <AppLoader />
@@ -226,7 +181,6 @@ const TenantPageDetails = ({ match }: RouteComponentProps<Props>) => {
             noOfRows={segmentList.records.length}
             baseURL={`/tenants/${tenantName}/table/${tableName}/`}
             addLinks
-            isCellClickable
             showSearchBox={true}
             inAccordionFormat={true}
           />

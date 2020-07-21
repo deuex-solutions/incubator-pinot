@@ -152,6 +152,10 @@ const useStyles = makeStyles((theme) => ({
   cellStatusBad: {
     color: '#f44336',
     border: '1px solid #f44336',
+  },
+  cellStatusConsuming: {
+    color: '#ff9800',
+    border: '1px solid #ff9800',
   }
 }));
 
@@ -299,8 +303,8 @@ export default function CustomizedTables({
     };
   }, [search, timeoutId, filterSearchResults]);
 
-  const styleCell = (str: string | number | boolean) => {
-    if (str === 'Good') {
+  const styleCell = (str: string) => {
+    if (str === 'Good' || str.toLowerCase() === 'online') {
       return (
         <StyledChip
           label={str}
@@ -309,11 +313,20 @@ export default function CustomizedTables({
         />
       );
     }
-    if (str === 'Bad') {
+    if (str === 'Bad' || str.toLowerCase() === 'offline') {
       return (
         <StyledChip
           label={str}
           className={classes.cellStatusBad}
+          variant="outlined"
+        />
+      );
+    }
+    if (str.toLowerCase() === 'consuming') {
+      return (
+        <StyledChip
+          label={str}
+          className={classes.cellStatusConsuming}
           variant="outlined"
         />
       );

@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,21 +23,23 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Grid, Checkbox, Button } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import { TableData, SQLResult } from 'Models';
+import { TableData } from 'Models';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/material.css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/sql/sql';
 import _ from 'lodash';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import exportFromJSON from 'export-from-json';
 import Utils from '../utils/Utils';
-import { getQueryTables, getTableSchema, getQueryResult } from '../requests';
 import AppLoader from '../components/AppLoader';
 import CustomizedTables from '../components/Table';
 import QuerySideBar from '../components/Query/QuerySideBar';
 import TableToolbar from '../components/TableToolbar';
 import SimpleAccordion from '../components/SimpleAccordion';
+import PinotMethodUtils from '../utils/PinotMethodUtils';
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -50,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
     '& .CodeMirror': { height: 100, border: '1px solid #BDCCD9' },
   },
   queryOutput: {
-    border: '1px solid #BDCCD9',
+    '& .CodeMirror': { height: 430, border: '1px solid #BDCCD9' },
   },
   btn: {
     margin: '10px 10px 0 0',
@@ -118,6 +121,7 @@ const QueryPage = () => {
   const [checked, setChecked] = React.useState({
     tracing: false,
     querySyntaxPQL: false,
+    showResultJSON: false
   });
 
   const [copyMsg, showCopyMsg] = React.useState(false);
@@ -130,14 +134,7 @@ const QueryPage = () => {
     setInputQuery(value);
   };
 
-  const getAsObject = (str: SQLResult) => {
-    if (typeof str === 'string' || str instanceof String) {
-      return JSON.parse(JSON.stringify(str));
-    }
-    return str;
-  };
-
-  const handleRunNow = (query?: string) => {
+  const handleRunNow = async (query?: string) => {
     setFetching(true);
     let url;
     let params;
@@ -155,80 +152,15 @@ const QueryPage = () => {
       });
     }
 
-    getQueryResult(params, url).then(({ data }) => {
-      let queryResponse = null;
-
-      queryResponse = getAsObject(data);
-
-      let dataArray = [];
-      let columnList = [];
-      if (checked.querySyntaxPQL === true) {
-        if (queryResponse) {
-          if (queryResponse.selectionResults) {
-            // Selection query
-            columnList = queryResponse.selectionResults.columns;
-            dataArray = queryResponse.selectionResults.results;
-          } else if (!queryResponse.aggregationResults[0]?.groupByResult) {
-            // Simple aggregation query
-            columnList = _.map(
-              queryResponse.aggregationResults,
-              (aggregationResult) => {
-                return { title: aggregationResult.function };
-              }
-            );
-
-            dataArray.push(
-              _.map(queryResponse.aggregationResults, (aggregationResult) => {
-                return aggregationResult.value;
-              })
-            );
-          } else if (queryResponse.aggregationResults[0]?.groupByResult) {
-            // Aggregation group by query
-            // TODO - Revisit
-            const columns = queryResponse.aggregationResults[0].groupByColumns;
-            columns.push(queryResponse.aggregationResults[0].function);
-            columnList = _.map(columns, (columnName) => {
-              return columnName;
-            });
-
-            dataArray = _.map(
-              queryResponse.aggregationResults[0].groupByResult,
-              (aggregationGroup) => {
-                const row = aggregationGroup.group;
-                row.push(aggregationGroup.value);
-                return row;
-              }
-            );
-          }
-        }
-      } else if (queryResponse.resultTable?.dataSchema?.columnNames?.length) {
-        columnList = queryResponse.resultTable.dataSchema.columnNames;
-        dataArray = queryResponse.resultTable.rows;
-      }
-
-      setResultData({
-        columns: columnList,
-        records: dataArray,
-      });
-      setFetching(false);
-
-      setOutputResult(JSON.stringify(data, null, 2));
-    });
+    const results = await PinotMethodUtils.getQueryResults(params, url, checked);
+    setResultData(results.result);
+    setOutputResult(JSON.stringify(results.data, null, 2));
+    setFetching(false);
   };
 
-  const fetchSQLData = (tableName) => {
-    getTableSchema(tableName).then(({ data }) => {
-      const dimensionFields = data.dimensionFieldSpecs || [];
-      const metricFields = data.metricFieldSpecs || [];
-      const dateTimeField = data.dateTimeFieldSpecs || [];
-      const columnList = [...dimensionFields, ...metricFields, ...dateTimeField];
-      setTableSchema({
-        columns: ['column', 'type'],
-        records: columnList.map((field) => {
-          return [field.name, field.dataType];
-        }),
-      });
-    });
+  const fetchSQLData = async (tableName) => {
+    const result = await PinotMethodUtils.getTableSchemaData(tableName, false);
+    setTableSchema(result);
 
     const query = `select * from ${tableName} limit 10`;
     setInputQuery(query);
@@ -269,16 +201,14 @@ const QueryPage = () => {
     }, 3000);
   };
 
+  const fetchData = async () => {
+    const result = await PinotMethodUtils.getQueryTablesList();
+    setTableList(result);
+    setFetching(false);
+  };
+
   useEffect(() => {
-    getQueryTables().then(({ data }) => {
-      setTableList({
-        columns: ['Tables'],
-        records: data.tables.map((table) => {
-          return [table];
-        }),
-      });
-      setFetching(false);
-    });
+    fetchData();
   }, []);
 
   return fetching ? (
@@ -378,32 +308,47 @@ const QueryPage = () => {
                         Copied {resultData.records.length} rows to Clipboard
                       </Alert>
                     ) : null}
+
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={checked.showResultJSON}
+                          onChange={handleChange}
+                          name="showResultJSON"
+                          color="primary"
+                        />
+                      }
+                      label="Show JSON format"
+                      className={classes.runNowBtn}
+                    />
                   </Grid>
-                  <CustomizedTables
-                    title="Query Result"
-                    data={resultData}
-                    isPagination
-                    isSticky={true}
-                    showSearchBox={true}
-                    inAccordionFormat={true}
-                  />
+                  {!checked.showResultJSON 
+                    ? 
+                      <CustomizedTables
+                        title="Query Result"
+                        data={resultData}
+                        isPagination
+                        isSticky={true}
+                        showSearchBox={true}
+                        inAccordionFormat={true}
+                      /> 
+                    : 
+                    resultData.records.length ? (
+                      <SimpleAccordion
+                        headerTitle="Query Result (JSON Format)"
+                        showSearchBox={false}
+                      >
+                        <CodeMirror
+                          options={jsonoptions}
+                          value={outputResult}
+                          className={classes.queryOutput}
+                          autoCursor={false}
+                        />
+                      </SimpleAccordion>
+                    ) : null}
                 </>
               ) : null}
-            </Grid>
-
-            {resultData.records.length ? (
-              <SimpleAccordion
-                headerTitle="Query Result (JSON Format)"
-                showSearchBox={false}
-              >
-                <CodeMirror
-                  options={jsonoptions}
-                  value={outputResult}
-                  className={classes.queryOutput}
-                  autoCursor={false}
-                />
-              </SimpleAccordion>
-            ) : null}
+            </Grid> 
           </Grid>
         </Grid>
       </Grid>
