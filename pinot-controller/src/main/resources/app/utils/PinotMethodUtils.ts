@@ -34,6 +34,8 @@ import {
   getExternalView,
   getTenantTableDetails,
   getSegmentMetadata,
+  getClusterInfo,
+  getLiveInstancesFromClusterName
 } from '../requests';
 import Utils from './Utils';
 
@@ -82,24 +84,43 @@ const getAllInstances = () => {
 // This method is used to diaplay instance data on cluster manager home page
 // API: /instances/:instaneName
 // Expected Output: {columns: [], records: []}
-const getInstanceData = (instances) => {
+const getInstanceData = (instances, liveInstanceArr) => {
   const promiseArr = [...instances.map((inst) => getInstance(inst))];
 
   return Promise.all(promiseArr).then((result) => {
-    return {
-      columns: ['Name', 'Enabled', 'Hostname', 'Port', 'URI'],
-      records: [
+    return {  
+        columns: ['Insance Name', 'Enabled', 'Hostname', 'Port', 'Status'],
+        records: [
         ...result.map(({ data }) => [
           data.instanceName,
           data.enabled,
           data.hostName,
           data.port,
-          `${data.hostName}:${data.port}`,
+          liveInstanceArr.indexOf(data.instanceName) > -1 ? 'Alive' : 'Dead'
         ]),
       ],
     };
   });
 };
+
+// This method is used to fetch cluster name
+// API: /cluster/info
+// Expected Output: {clusterName: ''}
+const getClusterName = () => {
+  return getClusterInfo().then(({ data }) => {
+    return data.clusterName;
+    })
+} 
+
+// This method is used to fetch array of live instances name
+// API: /zk/ls?path=:ClusterName/LIVEINSTANCES
+// Expected Output: []
+const getLiveInstance = (clusterName) => {
+  const params = encodeURIComponent(`/${clusterName}/LIVEINSTANCES`)
+    return getLiveInstancesFromClusterName(params).then((data) => {
+      return data;
+    })
+}
 
 // This method is used to diaplay cluster congifuration on cluster manager home page
 // API: /cluster/configs
@@ -227,10 +248,32 @@ const getQueryResults = (params, url, checkedOptions) => {
       dataArray = queryResponse.resultTable.rows;
     }
 
+    const columnStats = [ 'timeUsedMs',
+      'numDocsScanned',
+      'totalDocs',
+      'numServersQueried',
+      'numServersResponded',
+      'numSegmentsQueried',
+      'numSegmentsProcessed',
+      'numSegmentsMatched',
+      'numConsumingSegmentsQueried',
+      'numEntriesScannedInFilter',
+      'numEntriesScannedPostFilter',
+      'numGroupsLimitReached',
+      'partialResponse',
+      'minConsumingFreshnessTimeMs'];
+
     return {
       result: {
         columns: columnList,
         records: dataArray,
+      },
+      queryStats: {
+        columns: columnStats,
+        records: [[data.timeUsedMs, data.numDocsScanned, data.totalDocs, data.numServersQueried, data.numServersResponded,
+          data.numSegmentsQueried, data.numSegmentsProcessed, data.numSegmentsMatched, data.numConsumingSegmentsQueried,
+          data.numEntriesScannedInFilter, data.numEntriesScannedPostFilter, data.numGroupsLimitReached, 
+          data.partialResponse ? data.partialResponse : '-', data.minConsumingFreshnessTimeMs]]
       },
       data,
     };
@@ -407,4 +450,6 @@ export default {
   getSegmentList,
   getTableDetails,
   getSegmentDetails,
+  getClusterName,
+  getLiveInstance
 };

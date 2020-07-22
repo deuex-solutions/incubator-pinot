@@ -125,10 +125,10 @@ const SegmentDetails = ({ match }: RouteComponentProps<Props>) => {
       <div className={classes.highlightBackground}>
         <TableToolbar name="Summary" showSearchBox={false} />
         <Grid container className={classes.body}>
-          <Grid item xs={4}>
+          <Grid item xs={5}>
             <strong>Segment Name:</strong> {segmentSummary.segmentName}
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={3}>
             <strong>Total Docs:</strong> {segmentSummary.totalDocs}
           </Grid>
           <Grid item xs={4}>

@@ -118,6 +118,11 @@ const QueryPage = () => {
 
   const [outputResult, setOutputResult] = useState('');
 
+  const [queryStats, setQueryStats] = useState<TableData>({
+    columns: [],
+    records: []
+  });
+
   const [checked, setChecked] = React.useState({
     tracing: false,
     querySyntaxPQL: false,
@@ -154,6 +159,7 @@ const QueryPage = () => {
 
     const results = await PinotMethodUtils.getQueryResults(params, url, checked);
     setResultData(results.result);
+    setQueryStats(results.queryStats);
     setOutputResult(JSON.stringify(results.data, null, 2));
     setFetching(false);
   };
@@ -268,6 +274,17 @@ const QueryPage = () => {
                 </Button>
               </Grid>
             </Grid>
+            
+            {queryStats.records.length ? 
+              <Grid item xs style={{ backgroundColor: 'white' }}>
+                <CustomizedTables
+                  title="Query Response Stats"
+                  data={queryStats}
+                  showSearchBox={true}
+                  inAccordionFormat={true}
+                />
+              </Grid>
+              : null }
 
             <Grid item xs style={{ backgroundColor: 'white' }}>
               {resultData.records.length ? (

@@ -304,7 +304,7 @@ export default function CustomizedTables({
   }, [search, timeoutId, filterSearchResults]);
 
   const styleCell = (str: string) => {
-    if (str === 'Good' || str.toLowerCase() === 'online') {
+    if (str === 'Good' || str.toLowerCase() === 'online' || str.toLowerCase() === 'alive') {
       return (
         <StyledChip
           label={str}
@@ -313,7 +313,7 @@ export default function CustomizedTables({
         />
       );
     }
-    if (str === 'Bad' || str.toLowerCase() === 'offline') {
+    if (str === 'Bad' || str.toLowerCase() === 'offline' || str.toLowerCase() === 'dead') {
       return (
         <StyledChip
           label={str}
@@ -372,7 +372,7 @@ export default function CustomizedTables({
                 <TableRow>
                   <StyledTableCell
                     className={classes.nodata}
-                    colSpan={data.columns.length}
+                    colSpan={2}
                   >
                     No Record(s) found
                   </StyledTableCell>
