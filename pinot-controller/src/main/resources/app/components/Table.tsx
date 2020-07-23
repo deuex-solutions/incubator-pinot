@@ -62,6 +62,7 @@ type Props = {
   recordsCount?: number,
   showSearchBox: boolean,
   inAccordionFormat?: boolean
+  routeTo?: string
 };
 
 const StyledTableRow = withStyles((theme) =>
@@ -249,7 +250,8 @@ export default function CustomizedTables({
   baseURL,
   recordsCount,
   showSearchBox,
-  inAccordionFormat
+  inAccordionFormat,
+  routeTo
 }: Props) {
   const [finalData, setFinalData] = React.useState(Utils.tableFormat(data));
 
@@ -387,7 +389,7 @@ export default function CustomizedTables({
                           <StyledTableCell key={idx}>
                             <NavLink
                               className={classes.link}
-                              to={`${baseURL}${cell}`}
+                              to={`${baseURL}${routeTo?`${routeTo}`:`${cell}`}`}
                             >
                               {cell}
                             </NavLink>

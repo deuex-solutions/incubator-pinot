@@ -89,16 +89,22 @@ const getInstanceData = (instances, liveInstanceArr) => {
 
   return Promise.all(promiseArr).then((result) => {
     return {  
+      data : {
         columns: ['Insance Name', 'Enabled', 'Hostname', 'Port', 'Status'],
         records: [
-        ...result.map(({ data }) => [
-          data.instanceName,
-          data.enabled,
-          data.hostName,
-          data.port,
-          liveInstanceArr.indexOf(data.instanceName) > -1 ? 'Alive' : 'Dead'
-        ]),
-      ],
+          ...result.map(({ data }) => [
+            data.instanceName,
+            data.enabled,
+            data.hostName,
+            data.port,
+            liveInstanceArr.indexOf(data.instanceName) > -1 ? 'Alive' : 'Dead'
+          ]),
+        ],
+      },
+      tenantName: 
+        result.map(({ data }) => 
+          _.uniq(data.tags.map((name) => name.split('_')[0]))
+        ),
     };
   });
 };
@@ -109,18 +115,18 @@ const getInstanceData = (instances, liveInstanceArr) => {
 const getClusterName = () => {
   return getClusterInfo().then(({ data }) => {
     return data.clusterName;
-    })
-} 
+  });
+};
 
 // This method is used to fetch array of live instances name
 // API: /zk/ls?path=:ClusterName/LIVEINSTANCES
 // Expected Output: []
 const getLiveInstance = (clusterName) => {
   const params = encodeURIComponent(`/${clusterName}/LIVEINSTANCES`)
-    return getLiveInstancesFromClusterName(params).then((data) => {
-      return data;
-    })
-}
+  return getLiveInstancesFromClusterName(params).then((data) => {
+    return data;
+  });
+};
 
 // This method is used to diaplay cluster congifuration on cluster manager home page
 // API: /cluster/configs
@@ -350,6 +356,10 @@ const getTenantTableData = (tenantName) => {
         };
       });
     }
+    return {
+      columns: columnHeaders,
+      records: []
+    };
   });
 };
 

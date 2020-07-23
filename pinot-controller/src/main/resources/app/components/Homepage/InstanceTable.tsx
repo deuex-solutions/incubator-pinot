@@ -35,20 +35,22 @@ const InstaceTable = ({ name, instances }: Props) => {
     columns: [],
     records: []
   });
+  const [routeTo, setRouteTo] = useState('');
 
   const fetchClusterName = async () => {
     const clusterName = await PinotMethodUtils.getClusterName();
     fetchLiveInstance(clusterName);
-  }
+  };
 
   const fetchLiveInstance = async (clusterName) => {
     const liveInstanceArr = await PinotMethodUtils.getLiveInstance(clusterName);
     fetchData(liveInstanceArr.data);
-  }
+  };
 
   const fetchData = async (liveInstanceArr) => {
     const result = await PinotMethodUtils.getInstanceData(instances, liveInstanceArr);
-    setTableData(result);
+    setTableData(result.data);
+    setRouteTo(result.tenantName.toString());
     setFetching(false);
   };
 
@@ -63,6 +65,9 @@ const InstaceTable = ({ name, instances }: Props) => {
       data={tableData}
       showSearchBox={true}
       inAccordionFormat={true}
+      addLinks
+      baseURL='/tenants/'
+      routeTo={routeTo}
     />
   );
 };
