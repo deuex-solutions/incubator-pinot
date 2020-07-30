@@ -92,7 +92,7 @@ const getInstanceData = (instances, liveInstanceArr) => {
 
   return Promise.all(promiseArr).then((result) => {
     return {
-      columns: ['Insance Name', 'Enabled', 'Hostname', 'Port', 'Status'],
+      columns: ['Instance Name', 'Enabled', 'Hostname', 'Port', 'Status'],
       records: [
         ...result.map(({ data }) => [
           data.instanceName,

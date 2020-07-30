@@ -29,6 +29,9 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/material.css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/sql/sql';
+import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/hint/sql-hint';
+import 'codemirror/addon/hint/show-hint.css';
 import _ from 'lodash';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
@@ -90,11 +93,14 @@ const jsonoptions = {
 
 const sqloptions = {
   lineNumbers: true,
-  mode: 'sql',
+  mode: 'text/x-sql',
   styleActiveLine: true,
-  gutters: ['CodeMirror-lint-markers'],
   lint: true,
-  theme: 'default'
+  theme: 'default',
+  indentWithTabs: true,
+  smartIndent: true,
+  lineWrapping: true,
+  extraKeys: { "'@'": 'autocomplete' },
 };
 
 const QueryPage = () => {
