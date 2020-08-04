@@ -240,7 +240,6 @@ const QueryPage = () => {
   }, []);
 
   const handleSqlHints = (cm: NativeCodeMirror.Editor) => {
-    const { ch, line } = cm.getCursor();
     const tableNames = [];
     tableList.records.forEach((obj, i) => {
       tableNames.push(obj[i]);
@@ -249,13 +248,29 @@ const QueryPage = () => {
       return obj[0];
     });
     const hintOptions = [];
+    const defaultHint = (NativeCodeMirror as any).hint.sql(cm);
+    
     Array.prototype.push.apply(hintOptions, Utils.generateCodeMirrorOptions(tableNames, 'TABLE'));
     Array.prototype.push.apply(hintOptions, Utils.generateCodeMirrorOptions(columnNames, 'COLUMNS'));
-    return {
-      from: { ch, line },
-      to: { ch, line },
-      list: hintOptions,
-    };
+
+    const cur = cm.getCursor();
+    const curLine = cm.getLine(cur.line);
+    let start = cur.ch;
+    let end = start;
+    // eslint-disable-next-line no-plusplus
+    while (end < curLine.length && /[\w$]/.test(curLine.charAt(end))) ++end;
+    // eslint-disable-next-line no-plusplus
+    while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
+    const curWord = start !== end && curLine.slice(start, end);
+    const regex = new RegExp(`^${  curWord}`, 'i');
+    
+    const finalList =  (!curWord ? hintOptions : hintOptions.filter(function (item) {
+      return item.displayText.match(regex);
+    })).sort();
+
+    Array.prototype.push.apply(defaultHint.list, finalList);
+
+    return defaultHint;
   };
 
   return fetching ? (
