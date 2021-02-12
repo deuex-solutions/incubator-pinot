@@ -62,7 +62,7 @@ Pinot was originally built at LinkedIn to power rich interactive real-time analy
 
 * **Query with SQL:** SQL-like language that supports selection, aggregation, filtering, group by, order by, distinct queries on data.
 
-* **Upsert during real-time ingestion**: update the data at-scale with consistency
+* **Upsert dasdfasdfuring real-time ingestion**: update the data at-scale with consistency
 
 * **Multi-valued fields:** support for multi-valued fields, allowing you to query fields as comma separated values.
 
